@@ -6,12 +6,13 @@ spring:
     name: user-service
   config:
     import: optional:file:.env[.properties]
-  r2dbc:
-    url: r2dbc:postgresql://${DB_HOST}:5432/${DB_DATABASE}?currentSchema=${DB_DATABASE}
-    username: ${DB_USER}
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:5432/${DB_DATABASE}?currentSchema=${DB_DATABASE}
+    username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   liquibase:
-    default-schema: ${DB_NAME}
+    change-log: classpath:db/db.changelog.yaml
+    default-schema: ${DB_DATABASE}
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
