@@ -27,6 +27,7 @@ public class User {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Enumerated(value = EnumType.STRING)
     private Role role;
 
     @Column(name = "created_at")
@@ -34,5 +35,11 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public enum Role {
+
+        ROLE_USER, ROLE_ADMIN
+
+    }
 
 }
