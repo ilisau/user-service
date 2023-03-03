@@ -1,0 +1,23 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+  config:
+    import: optional:file:.env[.properties]
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST}:5432/${DB_DATABASE}?currentSchema=${DB_DATABASE}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  liquibase:
+    default-schema: ${DB_NAME}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
