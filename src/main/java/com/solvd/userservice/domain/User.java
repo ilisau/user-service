@@ -2,8 +2,7 @@ package com.solvd.userservice.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import lombok.RequiredArgsConstructor;
 
 @Data
 @Entity
@@ -14,31 +13,32 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "first_name")
-    private String firstName;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-    @Column(name = "last_name")
-    private String lastName;
+    @Column(name = "surname", nullable = false)
+    private String surname;
 
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "phone_number")
-    private String phoneNumber;
-
-    @Enumerated(value = EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "is_activated", nullable = false)
+    private boolean isActivated;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
+    @RequiredArgsConstructor
     public enum Role {
 
-        ROLE_USER, ROLE_ADMIN
+        CLIENT("CLIENT"),
+        EMPLOYEE("EMPLOYEE");
+
+        private final String value;
 
     }
 

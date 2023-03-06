@@ -7,16 +7,43 @@ spring:
   config:
     import: optional:file:.env[.properties]
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:5432/${DB_DATABASE}?currentSchema=${DB_DATABASE}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://${DB_HOST}:5432/${POSTGRES_DB}?currentSchema=${POSTGRES_DB}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
   liquibase:
     change-log: classpath:db/db.changelog.yaml
-    default-schema: ${DB_DATABASE}
+    default-schema: ${POSTGRES_DB}
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
+  mail:
+    host: ${SPRING_MAIL_HOST}
+    port: ${SPRING_MAIL_PORT}
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+    properties:
+      mail:
+        debug: false
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+mail:
+  links:
+    activation: http://localhost:8080/api/v1/auth/register/confirm?token=
+    restore: http://localhost:8080/api/v1/auth/password/restore?token=
+
+security:
+  jwt:
+    secret: c651749e8354adb09452a8ad14d4beadb7d57064d6cfb5c0e812bc30724458d187f43e58c22c30486303bbfc655391860952e92add87b5ce9e2ac7cdc612ad73=
+    access: 30
+    refresh: 336
+    activation: 24
+    reset: 24
 
 eureka:
   client:

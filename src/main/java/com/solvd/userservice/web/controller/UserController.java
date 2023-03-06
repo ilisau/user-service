@@ -1,10 +1,14 @@
 package com.solvd.userservice.web.controller;
 
+import com.solvd.userservice.domain.Password;
 import com.solvd.userservice.domain.User;
+import com.solvd.userservice.domain.jwt.JwtToken;
 import com.solvd.userservice.service.UserService;
+import com.solvd.userservice.web.dto.PasswordDto;
 import com.solvd.userservice.web.dto.UserDto;
 import com.solvd.userservice.web.dto.validation.OnCreate;
 import com.solvd.userservice.web.dto.validation.OnUpdate;
+import com.solvd.userservice.web.mapper.PasswordMapper;
 import com.solvd.userservice.web.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +22,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserMapper userMapper;
+    private final PasswordMapper passwordMapper;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -38,6 +43,28 @@ public class UserController {
     public UserDto getById(@PathVariable Long id) {
         User user = userService.getById(id);
         return userMapper.toDto(user);
+    }
+
+    @PutMapping("/{id}/password")
+    public void changePassword(@PathVariable Long id, @RequestBody PasswordDto passwordDto) {
+        Password password = passwordMapper.toEntity(passwordDto);
+        userService.updatePassword(id, password);
+    }
+
+    @PostMapping("/{id}/password")
+    public void setPassword(@PathVariable Long id, @RequestBody String newPassword) {
+        userService.updatePassword(id, newPassword);
+    }
+
+    @GetMapping("/email/{email}")
+    public UserDto getById(@PathVariable String email) {
+        User user = userService.getByEmail(email);
+        return userMapper.toDto(user);
+    }
+
+    @PostMapping("/activate")
+    public void activate(@RequestBody JwtToken jwtToken) {
+        userService.activate(jwtToken);
     }
 
     @DeleteMapping("/{id}")
