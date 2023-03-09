@@ -13,14 +13,14 @@ public interface UserService {
 
     Mono<User> update(User user);
 
-    void updatePassword(Long userId, String newPassword);
+    Mono<Void> updatePassword(Long userId, String newPassword);
 
-    void updatePassword(Long userId, Password password);
+    Mono<Void> updatePassword(Long userId, Password password);
 
     Mono<User> create(User user);
 
-    void activate(JwtToken token);
+    Mono<Void> activate(JwtToken token);
 
-    void delete(Long id);
+    Mono<Void> delete(Long id);
 
 }

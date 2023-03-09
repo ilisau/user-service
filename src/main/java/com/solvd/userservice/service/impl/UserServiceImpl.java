@@ -34,14 +34,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<User> getById(Long id) {
+        Mono<User> error = Mono.error(new UserNotFoundException("User with id " + id + " not found"));
         return userRepository.findById(id)
-                .switchIfEmpty(Mono.error(new UserNotFoundException("User with id " + id + " not found")));
+                .switchIfEmpty(error);
     }
 
     @Override
     public Mono<User> getByEmail(String email) {
+        Mono<User> error = Mono.error(new UserNotFoundException("User with email " + email + " not found"));
         return userRepository.findByEmail(email)
-                .switchIfEmpty(Mono.error(new UserNotFoundException("User with email " + email + " not found")));
+                .switchIfEmpty(error);
     }
 
     @Override
@@ -58,38 +60,37 @@ public class UserServiceImpl implements UserService {
     private Mono<Boolean> checkIfEmailIsAvailable(User user) {
         Mono<User> userWithSameEmail = userRepository.findByEmail(user.getEmail())
                 .switchIfEmpty(Mono.just(user));
+        Mono<Boolean> error = Mono.error(new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists"));
         return userWithSameEmail
                 .flatMap(u -> {
                     if (!u.equals(user) && !Objects.equals(u.getId(), user.getId())) {
-                        return Mono.error(new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists"));
+                        return error;
                     }
                     return Mono.just(true);
                 });
     }
 
     @Override
-    public void updatePassword(Long userId, String newPassword) {
+    public Mono<Void> updatePassword(Long userId, String newPassword) {
         Mono<User> user = getById(userId);
-        user.map(u -> {
+        return user.flatMap(u -> {
                     u.setPassword(passwordEncoder.encode(newPassword));
-                    return u;
-                })
-                .flatMap(userRepository::save)
-                .subscribe();
+                    userRepository.save(u).subscribe();
+                    return Mono.empty();
+                });
     }
 
     @Override
-    public void updatePassword(Long userId, Password password) {
+    public Mono<Void> updatePassword(Long userId, Password password) {
         Mono<User> user = getById(userId);
-        user.map(u -> {
+        return user.flatMap(u -> {
                     if (!passwordEncoder.matches(password.getOldPassword(), u.getPassword())) {
-                        throw new PasswordMismatchException("old password is incorrect");
+                        return Mono.error(new PasswordMismatchException("old password is incorrect"));
                     }
                     u.setPassword(passwordEncoder.encode(password.getNewPassword()));
-                    return u;
-                })
-                .flatMap(userRepository::save)
-                .subscribe();
+                    userRepository.save(u).subscribe();
+                    return Mono.empty();
+                });
     }
 
     @Override
@@ -110,7 +111,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void activate(JwtToken token) {
+    public Mono<Void> activate(JwtToken token) {
         if (!jwtService.validateToken(token.getToken())) {
             throw new InvalidTokenException("token is expired");
         }
@@ -119,17 +120,16 @@ public class UserServiceImpl implements UserService {
         }
         Long id = jwtService.retrieveUserId(token.getToken());
         Mono<User> user = getById(id);
-        user.map(u -> {
+        return user.flatMap(u -> {
                     u.setActivated(true);
-                    return u;
-                })
-                .flatMap(userRepository::save)
-                .subscribe();
+                    userRepository.save(u).subscribe();
+                    return Mono.empty();
+                });
     }
 
     @Override
-    public void delete(Long id) {
-        userRepository.deleteById(id).subscribe();
+    public Mono<Void> delete(Long id) {
+        return userRepository.deleteById(id);
     }
 
 }

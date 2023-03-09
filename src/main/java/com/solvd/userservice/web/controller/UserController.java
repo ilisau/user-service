@@ -47,16 +47,16 @@ public class UserController {
     }
 
     @PutMapping("/{id}/password")
-    public void changePassword(@PathVariable Long id,
+    public Mono<Void> changePassword(@PathVariable Long id,
                                @RequestBody PasswordDto passwordDto) {
         Password password = passwordMapper.toEntity(passwordDto);
-        userService.updatePassword(id, password);
+        return userService.updatePassword(id, password);
     }
 
     @PostMapping("/{id}/password")
-    public void setPassword(@PathVariable Long id,
+    public Mono<Void> setPassword(@PathVariable Long id,
                             @RequestBody String newPassword) {
-        userService.updatePassword(id, newPassword);
+        return userService.updatePassword(id, newPassword);
     }
 
     @GetMapping("/email/{email}")
@@ -66,14 +66,14 @@ public class UserController {
     }
 
     @PostMapping("/activate")
-    public void activate(@RequestBody JwtToken jwtToken) {
-        userService.activate(jwtToken);
+    public Mono<Void> activate(@RequestBody JwtToken jwtToken) {
+        return userService.activate(jwtToken);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(@PathVariable Long id) {
-        userService.delete(id);
+    public Mono<Void> deleteById(@PathVariable Long id) {
+        return userService.delete(id);
     }
 
 }
