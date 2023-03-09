@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("api/v1/users")
@@ -26,51 +27,53 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDto create(@Validated(OnCreate.class) @RequestBody UserDto userDto) {
+    public Mono<UserDto> create(@Validated(OnCreate.class) @RequestBody UserDto userDto) {
         User user = userMapper.toUser(userDto);
-        user = userService.create(user);
-        return userMapper.toDto(user);
+        Mono<User> userMono = userService.create(user);
+        return userMono.map(userMapper::toDto);
     }
 
     @PutMapping
-    public UserDto update(@Validated(OnUpdate.class) @RequestBody UserDto userDto) {
+    public Mono<UserDto> update(@Validated(OnUpdate.class) @RequestBody UserDto userDto) {
         User user = userMapper.toUser(userDto);
-        user = userService.update(user);
-        return userMapper.toDto(user);
+        Mono<User> userMono = userService.update(user);
+        return userMono.map(userMapper::toDto);
     }
 
     @GetMapping("/{id}")
-    public UserDto getById(@PathVariable Long id) {
-        User user = userService.getById(id);
-        return userMapper.toDto(user);
+    public Mono<UserDto> getById(@PathVariable Long id) {
+        Mono<User> user = userService.getById(id);
+        return user.map(userMapper::toDto);
     }
 
     @PutMapping("/{id}/password")
-    public void changePassword(@PathVariable Long id, @RequestBody PasswordDto passwordDto) {
+    public Mono<Void> changePassword(@PathVariable Long id,
+                               @RequestBody PasswordDto passwordDto) {
         Password password = passwordMapper.toEntity(passwordDto);
-        userService.updatePassword(id, password);
+        return userService.updatePassword(id, password);
     }
 
     @PostMapping("/{id}/password")
-    public void setPassword(@PathVariable Long id, @RequestBody String newPassword) {
-        userService.updatePassword(id, newPassword);
+    public Mono<Void> setPassword(@PathVariable Long id,
+                            @RequestBody String newPassword) {
+        return userService.updatePassword(id, newPassword);
     }
 
     @GetMapping("/email/{email}")
-    public UserDto getById(@PathVariable String email) {
-        User user = userService.getByEmail(email);
-        return userMapper.toDto(user);
+    public Mono<UserDto> getById(@PathVariable String email) {
+        Mono<User> user = userService.getByEmail(email);
+        return user.map(userMapper::toDto);
     }
 
     @PostMapping("/activate")
-    public void activate(@RequestBody JwtToken jwtToken) {
-        userService.activate(jwtToken);
+    public Mono<Void> activate(@RequestBody JwtToken jwtToken) {
+        return userService.activate(jwtToken);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(@PathVariable Long id) {
-        userService.delete(id);
+    public Mono<Void> deleteById(@PathVariable Long id) {
+        return userService.delete(id);
     }
 
 }

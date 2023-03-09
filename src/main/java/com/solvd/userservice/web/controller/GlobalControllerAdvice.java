@@ -1,6 +1,7 @@
 package com.solvd.userservice.web.controller;
 
 import com.solvd.userservice.domain.exception.ExceptionMessage;
+import com.solvd.userservice.domain.exception.PasswordMismatchException;
 import com.solvd.userservice.domain.exception.UserAlreadyExistsException;
 import com.solvd.userservice.domain.exception.UserNotFoundException;
 import jakarta.validation.ConstraintViolation;
@@ -47,6 +48,12 @@ public class GlobalControllerAdvice {
         exceptionBody.setDetails(errors.stream()
                 .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage)));
         return exceptionBody;
+    }
+
+    @ExceptionHandler(PasswordMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionMessage handlePasswordMismatchException(PasswordMismatchException e) {
+        return new ExceptionMessage(e.getMessage());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
