@@ -17,12 +17,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Lazy))
@@ -34,69 +33,83 @@ public class UserServiceImpl implements UserService {
     private final MailService mailService;
 
     @Override
-    @Transactional(readOnly = true)
-    public User getById(Long id) {
+    public Mono<User> getById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User with id " + id + " not found"));
+                .switchIfEmpty(Mono.error(new UserNotFoundException("User with id " + id + " not found")));
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public User getByEmail(String email) {
+    public Mono<User> getByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User with email " + email + " not found"));
+                .switchIfEmpty(Mono.error(new UserNotFoundException("User with email " + email + " not found")));
     }
 
     @Override
-    @Transactional
-    public User update(User user) {
-        Optional<User> userWithSameEmail = userRepository.findByEmail(user.getEmail());
-        if (userWithSameEmail.isPresent() && !Objects.equals(userWithSameEmail.get().getId(), user.getId())) {
-            throw new UserAlreadyExistsException("user with email " + user.getEmail() + " already exists");
-        }
-        User oldUser = getById(user.getId());
-        oldUser.setEmail(user.getEmail());
-        oldUser.setName(user.getName());
-        oldUser.setSurname(user.getSurname());
-        userRepository.save(oldUser);
-        return oldUser;
+    public Mono<User> update(User user) {
+        return checkIfEmailIsAvailable(user)
+                .onErrorResume(Mono::error)
+                .map(value -> {
+                    user.setPassword(passwordEncoder.encode(user.getPassword()));
+                    userRepository.save(user).subscribe();
+                    return user;
+                });
+    }
+
+    private Mono<Boolean> checkIfEmailIsAvailable(User user) {
+        Mono<User> userWithSameEmail = userRepository.findByEmail(user.getEmail())
+                .switchIfEmpty(Mono.just(user));
+        return userWithSameEmail
+                .flatMap(u -> {
+                    if (!u.equals(user) && !Objects.equals(u.getId(), user.getId())) {
+                        return Mono.error(new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists"));
+                    }
+                    return Mono.just(true);
+                });
     }
 
     @Override
     public void updatePassword(Long userId, String newPassword) {
-        User user = getById(userId);
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
+        Mono<User> user = getById(userId);
+        user.map(u -> {
+                    u.setPassword(passwordEncoder.encode(newPassword));
+                    return u;
+                })
+                .flatMap(userRepository::save)
+                .subscribe();
     }
 
     @Override
     public void updatePassword(Long userId, Password password) {
-        User user = getById(userId);
-        if (!passwordEncoder.matches(password.getOldPassword(), user.getPassword())) {
-            throw new PasswordMismatchException("old password is incorrect");
-        }
-        user.setPassword(passwordEncoder.encode(password.getNewPassword()));
-        userRepository.save(user);
+        Mono<User> user = getById(userId);
+        user.map(u -> {
+                    if (!passwordEncoder.matches(password.getOldPassword(), u.getPassword())) {
+                        throw new PasswordMismatchException("old password is incorrect");
+                    }
+                    u.setPassword(passwordEncoder.encode(password.getNewPassword()));
+                    return u;
+                })
+                .flatMap(userRepository::save)
+                .subscribe();
     }
 
     @Override
-    @Transactional
-    public User create(User user) {
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new UserAlreadyExistsException("user with email " + user.getEmail() + " already exists");
-        }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setActivated(false);
-        userRepository.save(user);
-        Map<String, Object> params = new HashMap<>();
-        String token = jwtService.generateToken(JwtTokenType.ACTIVATION, user);
-        params.put("token", token);
-        mailService.sendMail(user, MailType.ACTIVATION, params);
-        return user;
+    public Mono<User> create(User user) {
+        return checkIfEmailIsAvailable(user)
+                .onErrorResume(Mono::error)
+                .map(value -> {
+                    user.setPassword(passwordEncoder.encode(user.getPassword()));
+                    user.setActivated(false);
+                    userRepository.save(user).subscribe();
+
+                    Map<String, Object> params = new HashMap<>();
+                    String token = jwtService.generateToken(JwtTokenType.ACTIVATION, user);
+                    params.put("token", token);
+                    mailService.sendMail(user, MailType.ACTIVATION, params);
+                    return user;
+                });
     }
 
     @Override
-    @Transactional
     public void activate(JwtToken token) {
         if (!jwtService.validateToken(token.getToken())) {
             throw new InvalidTokenException("token is expired");
@@ -105,15 +118,18 @@ public class UserServiceImpl implements UserService {
             throw new InvalidTokenException("invalid reset token");
         }
         Long id = jwtService.retrieveUserId(token.getToken());
-        User user = getById(id);
-        user.setActivated(true);
-        userRepository.save(user);
+        Mono<User> user = getById(id);
+        user.map(u -> {
+                    u.setActivated(true);
+                    return u;
+                })
+                .flatMap(userRepository::save)
+                .subscribe();
     }
 
     @Override
-    @Transactional
     public void delete(Long id) {
-        userRepository.deleteById(id);
+        userRepository.deleteById(id).subscribe();
     }
 
 }
