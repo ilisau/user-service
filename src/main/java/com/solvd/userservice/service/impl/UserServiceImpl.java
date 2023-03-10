@@ -95,19 +95,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<User> create(User user) {
-        return checkIfEmailIsAvailable(user)
-                .onErrorResume(Mono::error)
-                .map(value -> {
-                    user.setPassword(passwordEncoder.encode(user.getPassword()));
-                    user.setActivated(false);
-                    userRepository.save(user).subscribe();
+        return checkIfEmailIsAvailable(user).onErrorResume(Mono::error).map(value -> {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setActivated(false);
+            userRepository.save(user).subscribe();
 
-                    Map<String, Object> params = new HashMap<>();
-                    String token = jwtService.generateToken(JwtTokenType.ACTIVATION, user);
-                    params.put("token", token);
-                    mailService.sendMail(user, MailType.ACTIVATION, params);
-                    return user;
-                });
+            return user;
+        }).map(value -> {
+            Map<String, Object> params = new HashMap<>();
+            String token = jwtService.generateToken(JwtTokenType.ACTIVATION, user);
+            params.put("token", token);
+            mailService.sendMail(user, MailType.ACTIVATION, params).subscribe();
+            return value;
+        });
     }
 
     @Override
