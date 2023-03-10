@@ -28,14 +28,14 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<UserDto> create(@Validated(OnCreate.class) @RequestBody UserDto userDto) {
-        User user = userMapper.toUser(userDto);
+        User user = userMapper.toEntity(userDto);
         Mono<User> userMono = userService.create(user);
         return userMono.map(userMapper::toDto);
     }
 
     @PutMapping
     public Mono<UserDto> update(@Validated(OnUpdate.class) @RequestBody UserDto userDto) {
-        User user = userMapper.toUser(userDto);
+        User user = userMapper.toEntity(userDto);
         Mono<User> userMono = userService.update(user);
         return userMono.map(userMapper::toDto);
     }

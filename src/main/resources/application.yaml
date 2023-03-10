@@ -36,11 +36,6 @@ spring:
           starttls:
             enable: true
 
-mail:
-  links:
-    activation: http://localhost:8080/api/v1/auth/register/confirm?token=
-    restore: http://localhost:8080/api/v1/auth/password/restore?token=
-
 security:
   jwt:
     secret: c651749e8354adb09452a8ad14d4beadb7d57064d6cfb5c0e812bc30724458d187f43e58c22c30486303bbfc655391860952e92add87b5ce9e2ac7cdc612ad73=
