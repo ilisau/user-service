@@ -99,13 +99,15 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setActivated(false);
             userRepository.save(user).subscribe();
-
             return user;
         }).map(value -> {
             Map<String, Object> params = new HashMap<>();
             String token = jwtService.generateToken(JwtTokenType.ACTIVATION, user);
             params.put("token", token);
-            mailService.sendMail(user, MailType.ACTIVATION, params).subscribe();
+            params.put("user.name", user.getName());
+            params.put("user.surname", user.getSurname());
+            params.put("user.email", user.getEmail());
+            mailService.sendMail(MailType.ACTIVATION, params).subscribe();
             return value;
         });
     }

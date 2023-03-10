@@ -8,7 +8,6 @@ import java.util.Map;
 @Data
 public class MailDataDto {
 
-    private UserDto receiver;
     private MailType mailType;
     private Map<String, Object> params;
 

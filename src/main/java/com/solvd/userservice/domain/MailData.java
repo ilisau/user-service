@@ -9,7 +9,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class MailData {
 
-    private User receiver;
     private MailType mailType;
     private Map<String, Object> params;
 
