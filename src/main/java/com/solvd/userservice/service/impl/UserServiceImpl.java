@@ -73,11 +73,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<Void> updatePassword(Long userId, String newPassword) {
         Mono<User> user = getById(userId);
-        return user.flatMap(u -> {
+        return user.map(u -> {
                     u.setPassword(passwordEncoder.encode(newPassword));
-                    userRepository.save(u).subscribe();
-                    return Mono.empty();
-                });
+                    return u;
+                })
+                .flatMap(userRepository::save)
+                .flatMap(u -> Mono.empty());
     }
 
     @Override
@@ -87,29 +88,37 @@ public class UserServiceImpl implements UserService {
                     if (!passwordEncoder.matches(password.getOldPassword(), u.getPassword())) {
                         return Mono.error(new PasswordMismatchException("old password is incorrect"));
                     }
+                    return user;
+                })
+                .map(u -> {
                     u.setPassword(passwordEncoder.encode(password.getNewPassword()));
-                    userRepository.save(u).subscribe();
-                    return Mono.empty();
-                });
+                    return u;
+                })
+                .flatMap(userRepository::save)
+                .flatMap(u -> Mono.empty());
     }
 
     @Override
     public Mono<User> create(User user) {
-        return checkIfEmailIsAvailable(user).onErrorResume(Mono::error).map(value -> {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setActivated(false);
-            userRepository.save(user).subscribe();
-            return user;
-        }).map(value -> {
-            Map<String, Object> params = new HashMap<>();
-            String token = jwtService.generateToken(JwtTokenType.ACTIVATION, user);
-            params.put("token", token);
-            params.put("user.name", user.getName());
-            params.put("user.surname", user.getSurname());
-            params.put("user.email", user.getEmail());
-            mailService.sendMail(MailType.ACTIVATION, params).subscribe();
-            return value;
-        });
+        return checkIfEmailIsAvailable(user)
+                .onErrorResume(Mono::error)
+                .map(value -> {
+                    user.setPassword(passwordEncoder.encode(user.getPassword()));
+                    user.setActivated(false);
+                    return user;
+                })
+                .flatMap(userRepository::save)
+                .map(u -> {
+                    Map<String, Object> params = new HashMap<>();
+                    String token = jwtService.generateToken(JwtTokenType.ACTIVATION, user);
+                    params.put("token", token);
+                    params.put("user.name", user.getName());
+                    params.put("user.surname", user.getSurname());
+                    params.put("user.email", user.getEmail());
+                    return params;
+                })
+                .flatMap(params -> mailService.sendMail(MailType.ACTIVATION, params))
+                .map(u -> user);
     }
 
     @Override
@@ -122,11 +131,12 @@ public class UserServiceImpl implements UserService {
         }
         Long id = jwtService.retrieveUserId(token.getToken());
         Mono<User> user = getById(id);
-        return user.flatMap(u -> {
+        return user.map(u -> {
                     u.setActivated(true);
-                    userRepository.save(u).subscribe();
-                    return Mono.empty();
-                });
+                    return u;
+                })
+                .flatMap(userRepository::save)
+                .flatMap(u -> Mono.empty());
     }
 
     @Override

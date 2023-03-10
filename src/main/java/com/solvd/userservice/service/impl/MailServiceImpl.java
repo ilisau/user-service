@@ -15,8 +15,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MailServiceImpl implements MailService {
 
-    private WebClient.Builder webClientBuilder;
-    private MailDataMapper mailDataMapper;
+    private final WebClient.Builder webClientBuilder;
+    private final MailDataMapper mailDataMapper;
 
     @Override
     public Mono<Void> sendMail(MailType mailType, Map<String, Object> params) {

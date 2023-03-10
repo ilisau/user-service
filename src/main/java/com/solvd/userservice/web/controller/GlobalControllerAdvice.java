@@ -40,6 +40,12 @@ public class GlobalControllerAdvice {
         return new ExceptionMessage(e.getMessage());
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionMessage handleIllegalArgument(IllegalArgumentException e) {
+        return new ExceptionMessage(e.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionMessage handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
