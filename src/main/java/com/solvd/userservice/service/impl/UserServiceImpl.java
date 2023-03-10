@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
                     return u;
                 })
                 .flatMap(userRepository::save)
-                .flatMap(u -> Mono.empty());
+                .then();
     }
 
     @Override
@@ -95,7 +95,7 @@ public class UserServiceImpl implements UserService {
                     return u;
                 })
                 .flatMap(userRepository::save)
-                .flatMap(u -> Mono.empty());
+                .then();
     }
 
     @Override
@@ -136,7 +136,7 @@ public class UserServiceImpl implements UserService {
                     return u;
                 })
                 .flatMap(userRepository::save)
-                .flatMap(u -> Mono.empty());
+                .then();
     }
 
     @Override
