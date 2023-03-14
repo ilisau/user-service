@@ -30,6 +30,10 @@
 		<jsonwebtoken.version>0.11.5</jsonwebtoken.version>
 		<r2jdbc-postgresql.version>1.0.1.RELEASE</r2jdbc-postgresql.version>
 		<spring-cloud-resilience.version>3.0.0</spring-cloud-resilience.version>
+		<xembly.version>0.28.1</xembly.version>
+		<xml.version>0.27.2</xml.version>
+		<spring-kafka.version>3.0.4</spring-kafka.version>
+		<reactor-kafka.version>1.3.16</reactor-kafka.version>
 	</properties>
 
 	<dependencies>
@@ -68,6 +72,30 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+			<version>${spring-kafka.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.projectreactor.kafka</groupId>
+			<artifactId>reactor-kafka</artifactId>
+			<version>${reactor-kafka.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.jcabi</groupId>
+			<artifactId>jcabi-xml</artifactId>
+			<version>${xml.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.jcabi.incubator</groupId>
+			<artifactId>xembly</artifactId>
+			<version>${xembly.version}</version>
 		</dependency>
 
 		<dependency>
