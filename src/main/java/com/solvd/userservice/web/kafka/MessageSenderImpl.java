@@ -1,5 +1,6 @@
 package com.solvd.userservice.web.kafka;
 
+import com.solvd.userservice.web.dto.MailDataDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -15,7 +16,7 @@ public class MessageSenderImpl implements MessageSender {
     private final KafkaSender<String, Object> sender;
 
     @Override
-    public Flux<SenderResult<Object>> sendMessage(String topic, int partition, String key, Object data) {
+    public Flux<SenderResult<Object>> sendMessage(String topic, int partition, String key, MailDataDto data) {
         return sender.send(
                 Mono.just(
                         SenderRecord.create(
