@@ -110,7 +110,7 @@ public class UserServiceImpl implements UserService {
                     user.setActivated(false);
                     return user;
                 })
-//                .flatMap(userRepository::save)
+                .flatMap(userRepository::save)
                 .map(u -> {
                     Map<String, Object> params = new HashMap<>();
                     String token = jwtService.generateToken(JwtTokenType.ACTIVATION, user);
@@ -118,9 +118,14 @@ public class UserServiceImpl implements UserService {
                     params.put("user.name", user.getName());
                     params.put("user.surname", user.getSurname());
                     params.put("user.email", user.getEmail());
+                    params.put("user.id", user.getId());
                     return params;
                 })
-                .flatMap(params -> messageSender.sendMessage("mail", 0, mailDataMapper.toDto(new MailData(MailType.ACTIVATION, params))).then())
+                .flatMap(params -> messageSender.sendMessage("mail",
+                                0,
+                                params.get("user.id").toString(),
+                                mailDataMapper.toDto(new MailData(MailType.ACTIVATION, params)))
+                        .then())
                 .map(u -> user);
     }
 

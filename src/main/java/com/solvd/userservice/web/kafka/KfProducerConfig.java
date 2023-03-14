@@ -3,6 +3,8 @@ package com.solvd.userservice.web.kafka;
 import com.jcabi.xml.XML;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
@@ -15,6 +17,9 @@ import java.util.Map;
 @Configuration
 @RequiredArgsConstructor
 public class KfProducerConfig {
+
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String servers;
 
     private final XML settings;
 
@@ -29,11 +34,7 @@ public class KfProducerConfig {
     @Bean
     public SenderOptions<String, Object> senderOptions() {
         Map<String, Object> props = new HashMap<>(3);
-        props.put(
-                "bootstrap.servers",
-                new TextXpath(this.settings, "//bootstrapServers")
-                        .toString()
-        );
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
         props.put(
                 "key.serializer",
                 new TextXpath(this.settings, "//keySerializer")

@@ -5,6 +5,6 @@ import reactor.kafka.sender.SenderResult;
 
 public interface MessageSender {
 
-    Flux<SenderResult<Object>> sendMessage(String topic, int partition, Object data);
+    Flux<SenderResult<Object>> sendMessage(String topic, int partition, String key, Object data);
 
 }
