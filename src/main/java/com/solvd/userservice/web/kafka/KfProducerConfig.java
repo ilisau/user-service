@@ -1,6 +1,7 @@
 package com.solvd.userservice.web.kafka;
 
 import com.jcabi.xml.XML;
+import com.solvd.userservice.web.dto.MailDataDto;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -32,7 +33,7 @@ public class KfProducerConfig {
     }
 
     @Bean
-    public SenderOptions<String, Object> senderOptions() {
+    public SenderOptions<String, MailDataDto> senderOptions() {
         Map<String, Object> props = new HashMap<>(3);
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
         props.put(
@@ -49,7 +50,7 @@ public class KfProducerConfig {
     }
 
     @Bean
-    public KafkaSender<String, Object> sender(SenderOptions<String, Object> senderOptions) {
+    public KafkaSender<String, MailDataDto> sender(SenderOptions<String, MailDataDto> senderOptions) {
         return KafkaSender.create(senderOptions);
     }
 
