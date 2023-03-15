@@ -13,10 +13,10 @@ import reactor.kafka.sender.SenderResult;
 @RequiredArgsConstructor
 public class MessageSenderImpl implements MessageSender {
 
-    private final KafkaSender<String, Object> sender;
+    private final KafkaSender<String, MailDataDto> sender;
 
     @Override
-    public Flux<SenderResult<Object>> sendMessage(String topic, int partition, String key, MailDataDto data) {
+    public Flux<SenderResult<MailDataDto>> sendMessage(String topic, int partition, String key, MailDataDto data) {
         return sender.send(
                 Mono.just(
                         SenderRecord.create(
