@@ -48,14 +48,14 @@ public class UserController {
 
     @PutMapping("/{id}/password")
     public Mono<Void> changePassword(@PathVariable Long id,
-                               @RequestBody PasswordDto passwordDto) {
+                                     @RequestBody PasswordDto passwordDto) {
         Password password = passwordMapper.toEntity(passwordDto);
         return userService.updatePassword(id, password);
     }
 
     @PostMapping("/{id}/password")
     public Mono<Void> setPassword(@PathVariable Long id,
-                            @RequestBody String newPassword) {
+                                  @RequestBody String newPassword) {
         return userService.updatePassword(id, newPassword);
     }
 
