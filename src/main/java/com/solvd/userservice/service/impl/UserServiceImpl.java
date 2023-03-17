@@ -1,5 +1,6 @@
 package com.solvd.userservice.service.impl;
 
+import com.solvd.userservice.domain.MailData;
 import com.solvd.userservice.domain.MailType;
 import com.solvd.userservice.domain.Password;
 import com.solvd.userservice.domain.User;
@@ -10,8 +11,9 @@ import com.solvd.userservice.domain.exception.UserNotFoundException;
 import com.solvd.userservice.domain.jwt.JwtToken;
 import com.solvd.userservice.repository.UserRepository;
 import com.solvd.userservice.service.JwtService;
-import com.solvd.userservice.service.MailService;
 import com.solvd.userservice.service.UserService;
+import com.solvd.userservice.web.kafka.MessageSender;
+import com.solvd.userservice.web.mapper.MailDataMapper;
 import com.solvd.userservice.web.security.jwt.JwtTokenType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
@@ -30,7 +32,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final MailService mailService;
+    private final MessageSender messageSender;
+    private final MailDataMapper mailDataMapper;
 
     @Override
     public Mono<User> getById(Long id) {
@@ -115,9 +118,14 @@ public class UserServiceImpl implements UserService {
                     params.put("user.name", user.getName());
                     params.put("user.surname", user.getSurname());
                     params.put("user.email", user.getEmail());
+                    params.put("user.id", user.getId());
                     return params;
                 })
-                .flatMap(params -> mailService.sendMail(MailType.ACTIVATION, params))
+                .flatMap(params -> messageSender.sendMessage("mail",
+                                0,
+                                params.get("user.id").toString(),
+                                mailDataMapper.toDto(new MailData(MailType.ACTIVATION, params)))
+                        .then())
                 .map(u -> user);
     }
 
