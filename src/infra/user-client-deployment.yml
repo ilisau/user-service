@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-client
+  template:
+    metadata:
+      labels:
+        app: user-client
+    spec:
+      containers:
+        - name: user-client-app
+          image: ilyalisov/user-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secrets
+                  key: POSTGRES_PASSWORD
+            - name: HOST
+              value: postgres
+            - name: DB_HOST
+              value: postgres
+            - name: POSTGRES_DB
+              value: users
+            - name: KAFKA_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: user-client-configmap
+                  key: KAFKA_HOST
