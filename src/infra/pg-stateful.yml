@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: user-client-postgres
+spec:
+  serviceName: user-client-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-client-postgres
+  template:
+    metadata:
+      labels:
+        app: user-client-postgres
+    spec:
+      containers:
+        - name: user-client-db
+          image: postgres:15.1-alpine
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              value: users
+      volumes:
+        - name: db-mail-client-data
+          hostPath:
+            path: /data-user-client
+  volumeClaimTemplates:
+    - metadata:
+        name: db-mail-client-data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: 1Gi
