@@ -34,6 +34,7 @@
 		<xml.version>0.27.2</xml.version>
 		<spring-kafka.version>3.0.4</spring-kafka.version>
 		<reactor-kafka.version>1.3.16</reactor-kafka.version>
+		<spring-security.version>6.0.2</spring-security.version>
 	</properties>
 
 	<dependencies>
@@ -65,9 +66,15 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-core</artifactId>
+			<version>${spring-security.version}</version>
 		</dependency>
+
+		<!--		<dependency>-->
+<!--			<groupId>org.springframework.cloud</groupId>-->
+<!--			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>-->
+<!--		</dependency>-->
 
 		<dependency>
 			<groupId>org.springframework.kafka</groupId>

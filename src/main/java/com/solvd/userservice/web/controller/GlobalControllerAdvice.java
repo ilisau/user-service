@@ -85,6 +85,7 @@ public class GlobalControllerAdvice {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ExceptionMessage handleException(Exception e) {
+        e.printStackTrace();
         return new ExceptionMessage("Internal error");
     }
 

@@ -17,7 +17,7 @@ spec:
           image: ilyalisov/user-service:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 8080
+            - containerPort: 8081
           env:
             - name: POSTGRES_USERNAME
               valueFrom:
@@ -29,10 +29,8 @@ spec:
                 secretKeyRef:
                   name: pg-secrets
                   key: POSTGRES_PASSWORD
-            - name: HOST
-              value: postgres
             - name: DB_HOST
-              value: postgres
+              value: user-client-postgres
             - name: POSTGRES_DB
               value: users
             - name: KAFKA_HOST

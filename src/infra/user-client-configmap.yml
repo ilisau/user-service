@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: user-client-configmap
 data:
-  KAFKA_HOST: localhost:9092
+  KAFKA_HOST: kafka-service:9092
