@@ -6,20 +6,21 @@ spring:
     name: user-client
   config:
     import: optional:file:.env[.properties]
-  r2dbc:
-    url: r2dbc:postgresql://${DB_HOST}:5432/${POSTGRES_DB}?currentSchema=${POSTGRES_DB}
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
+  data:
+    mongodb:
+      database: ${MONGO_DB}
+      username: ${MONGO_USERNAME}
+      password: ${MONGO_PASSWORD}
+      host: ${DB_HOST}
+      port: 27017
+      authentication-database: admin
   liquibase:
     change-log: classpath:db/db.changelog.yaml
-    default-schema: ${POSTGRES_DB}
-    url: jdbc:postgresql://${DB_HOST}:5432/${POSTGRES_DB}?currentSchema=${POSTGRES_DB}
-    password: ${POSTGRES_PASSWORD}
-    user: ${POSTGRES_USERNAME}
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: none
+    default-schema: ${MONGO_DB}
+    url: jdbc:mongodb://${DB_HOST}:27017/${MONGO_DB}
+    password: ${MONGO_USERNAME}
+    user: ${MONGO_PASSWORD}
+    driver-class-name: liquibase.ext.mongodb.database.MongoClientDriver
   kafka:
     bootstrap-servers: ${KAFKA_HOST}
 

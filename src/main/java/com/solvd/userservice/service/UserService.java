@@ -7,20 +7,20 @@ import reactor.core.publisher.Mono;
 
 public interface UserService {
 
-    Mono<User> getById(Long id);
+    Mono<User> getById(String id);
 
     Mono<User> getByEmail(String email);
 
     Mono<User> update(User user);
 
-    Mono<Void> updatePassword(Long userId, String newPassword);
+    Mono<Void> updatePassword(String userId, String newPassword);
 
-    Mono<Void> updatePassword(Long userId, Password password);
+    Mono<Void> updatePassword(String userId, Password password);
 
     Mono<User> create(User user);
 
     Mono<Void> activate(JwtToken token);
 
-    Mono<Void> delete(Long id);
+    Mono<Void> delete(String id);
 
 }
