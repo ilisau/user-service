@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
     private final MailDataMapper mailDataMapper;
 
     @Override
-    public Mono<User> getById(Long id) {
+    public Mono<User> getById(String id) {
         Mono<User> error = Mono.error(new UserNotFoundException("User with id " + id + " not found"));
         return userRepository.findById(id)
                 .switchIfEmpty(error);
@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Void> updatePassword(Long userId, String newPassword) {
+    public Mono<Void> updatePassword(String userId, String newPassword) {
         Mono<User> user = getById(userId);
         return user.map(u -> {
                     u.setPassword(passwordEncoder.encode(newPassword));
@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Void> updatePassword(Long userId, Password password) {
+    public Mono<Void> updatePassword(String userId, Password password) {
         Mono<User> user = getById(userId);
         return user.flatMap(u -> {
                     if (!passwordEncoder.matches(password.getOldPassword(), u.getPassword())) {
@@ -137,7 +137,7 @@ public class UserServiceImpl implements UserService {
         if (!jwtService.isTokenType(token.getToken(), JwtTokenType.ACTIVATION)) {
             throw new InvalidTokenException("invalid reset token");
         }
-        Long id = jwtService.retrieveUserId(token.getToken());
+        String id = jwtService.retrieveUserId(token.getToken());
         Mono<User> user = getById(id);
         return user.map(u -> {
                     u.setActivated(true);
@@ -148,7 +148,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Void> delete(Long id) {
+    public Mono<Void> delete(String id) {
         return userRepository.deleteById(id);
     }
 

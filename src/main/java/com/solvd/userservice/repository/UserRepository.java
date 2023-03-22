@@ -1,12 +1,10 @@
 package com.solvd.userservice.repository;
 
 import com.solvd.userservice.domain.User;
-import org.springframework.data.repository.reactive.ReactiveCrudRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Mono;
 
-@Repository
-public interface UserRepository extends ReactiveCrudRepository<User, Long> {
+public interface UserRepository extends ReactiveMongoRepository<User, String> {
 
     Mono<User> findByEmail(String email);
 
