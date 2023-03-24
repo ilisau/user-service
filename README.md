@@ -30,6 +30,10 @@ You can change Circuit Breaker configuration in ```resilience4j.circuitbreaker``
 We use Kafka here for sending messages to mail client instead of blocking rest approach.
 
 
+4) Redis cache
+
+We use Redis here for caching users and improving speed of accessing user data.
+
 ## Installation
 
 You need to pull the project from the repository and install the dependencies.
