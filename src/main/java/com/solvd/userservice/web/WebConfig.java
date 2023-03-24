@@ -36,10 +36,8 @@ public class WebConfig {
     @Bean
     ReactiveRedisOperations<String, User> redisOperations(ReactiveRedisConnectionFactory factory) {
         Jackson2JsonRedisSerializer<User> serializer = new Jackson2JsonRedisSerializer<User>(User.class);
-
         RedisSerializationContext.RedisSerializationContextBuilder<String, User> builder =
                 RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
-
         RedisSerializationContext<String, User> context = builder.value(serializer)
                 .hashValue(serializer)
                 .build();
