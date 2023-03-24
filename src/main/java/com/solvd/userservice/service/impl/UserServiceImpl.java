@@ -16,6 +16,9 @@ import com.solvd.userservice.web.kafka.MessageSender;
 import com.solvd.userservice.web.mapper.MailDataMapper;
 import com.solvd.userservice.web.security.jwt.JwtTokenType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,7 @@ public class UserServiceImpl implements UserService {
     private final MailDataMapper mailDataMapper;
 
     @Override
+    @Cacheable(value = "users", key = "#id")
     public Mono<User> getById(String id) {
         Mono<User> error = Mono.error(new UserNotFoundException("User with id " + id + " not found"));
         return userRepository.findById(id)
@@ -43,6 +47,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = "users", key = "#email")
     public Mono<User> getByEmail(String email) {
         Mono<User> error = Mono.error(new UserNotFoundException("User with email " + email + " not found"));
         return userRepository.findByEmail(email)
@@ -50,6 +55,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CachePut(value = "users", key = "#user.id")
     public Mono<User> update(User user) {
         return checkIfEmailIsAvailable(user)
                 .onErrorResume(Mono::error)
@@ -74,6 +80,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "users", key = "#userId")
     public Mono<Void> updatePassword(String userId, String newPassword) {
         Mono<User> user = getById(userId);
         return user.map(u -> {
@@ -85,6 +92,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "users", key = "#userId")
     public Mono<Void> updatePassword(String userId, Password password) {
         Mono<User> user = getById(userId);
         return user.flatMap(u -> {
@@ -102,6 +110,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CachePut(value = "users", key = "#user.id")
     public Mono<User> create(User user) {
         return checkIfEmailIsAvailable(user)
                 .onErrorResume(Mono::error)
@@ -148,6 +157,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "users", key = "#id")
     public Mono<Void> delete(String id) {
         return userRepository.deleteById(id);
     }
