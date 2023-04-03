@@ -3,7 +3,8 @@ package com.solvd.userservice.web.controller;
 import com.solvd.userservice.domain.Password;
 import com.solvd.userservice.domain.User;
 import com.solvd.userservice.domain.jwt.JwtToken;
-import com.solvd.userservice.service.UserService;
+import com.solvd.userservice.service.UserEventService;
+import com.solvd.userservice.service.UserQueryService;
 import com.solvd.userservice.web.dto.PasswordDto;
 import com.solvd.userservice.web.dto.UserDto;
 import com.solvd.userservice.web.dto.validation.OnCreate;
@@ -13,7 +14,15 @@ import com.solvd.userservice.web.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -21,28 +30,27 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final UserEventService userEventService;
+    private final UserQueryService userQueryService;
     private final UserMapper userMapper;
     private final PasswordMapper passwordMapper;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<UserDto> create(@Validated(OnCreate.class) @RequestBody UserDto userDto) {
+    public Mono<Void> create(@Validated(OnCreate.class) @RequestBody UserDto userDto) {
         User user = userMapper.toEntity(userDto);
-        Mono<User> userMono = userService.create(user);
-        return userMono.map(userMapper::toDto);
+        return userEventService.create(user);
     }
 
     @PutMapping
-    public Mono<UserDto> update(@Validated(OnUpdate.class) @RequestBody UserDto userDto) {
+    public Mono<Void> update(@Validated(OnUpdate.class) @RequestBody UserDto userDto) {
         User user = userMapper.toEntity(userDto);
-        Mono<User> userMono = userService.update(user);
-        return userMono.map(userMapper::toDto);
+        return userEventService.update(user);
     }
 
     @GetMapping("/{id}")
     public Mono<UserDto> getById(@PathVariable String id) {
-        Mono<User> user = userService.getById(id);
+        Mono<User> user = userQueryService.getById(id);
         return user.map(userMapper::toDto);
     }
 
@@ -50,30 +58,30 @@ public class UserController {
     public Mono<Void> changePassword(@PathVariable String id,
                                      @RequestBody PasswordDto passwordDto) {
         Password password = passwordMapper.toEntity(passwordDto);
-        return userService.updatePassword(id, password);
+        return userEventService.updatePassword(id, password);
     }
 
     @PostMapping("/{id}/password")
     public Mono<Void> setPassword(@PathVariable String id,
                                   @RequestBody String newPassword) {
-        return userService.updatePassword(id, newPassword);
+        return userEventService.updatePassword(id, newPassword);
     }
 
     @GetMapping("/email/{email}")
     public Mono<UserDto> getByEmail(@PathVariable String email) {
-        Mono<User> user = userService.getByEmail(email);
+        Mono<User> user = userQueryService.getByEmail(email);
         return user.map(userMapper::toDto);
     }
 
     @PostMapping("/activate")
     public Mono<Void> activate(@RequestBody JwtToken jwtToken) {
-        return userService.activate(jwtToken);
+        return userEventService.activate(jwtToken);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> deleteById(@PathVariable String id) {
-        return userService.delete(id);
+        return userEventService.delete(id);
     }
 
 }
