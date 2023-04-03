@@ -1,10 +1,9 @@
-package com.solvd.userservice.web.kafka;
+package com.solvd.userservice.web.kafka.config;
 
 import com.jcabi.xml.XML;
-import com.solvd.userservice.web.dto.MailDataDto;
-import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,13 +15,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-@RequiredArgsConstructor
 public class KfProducerConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String servers;
 
     private final XML settings;
+
+    public KfProducerConfig(@Qualifier("producerXml") XML settings) {
+        this.settings = settings;
+    }
 
     @Bean
     public NewTopic topicMail() {
@@ -33,7 +35,15 @@ public class KfProducerConfig {
     }
 
     @Bean
-    public SenderOptions<String, MailDataDto> senderOptions() {
+    public NewTopic topicEvents() {
+        return TopicBuilder.name("events")
+                .partitions(5)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public SenderOptions<String, Object> senderOptions() {
         Map<String, Object> props = new HashMap<>(3);
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
         props.put(
@@ -50,7 +60,7 @@ public class KfProducerConfig {
     }
 
     @Bean
-    public KafkaSender<String, MailDataDto> sender(SenderOptions<String, MailDataDto> senderOptions) {
+    public KafkaSender<String, Object> sender(SenderOptions<String, Object> senderOptions) {
         return KafkaSender.create(senderOptions);
     }
 
