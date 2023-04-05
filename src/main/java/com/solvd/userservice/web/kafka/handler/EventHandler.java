@@ -1,4 +1,4 @@
-package com.solvd.userservice.web.kafka;
+package com.solvd.userservice.web.kafka.handler;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.support.Acknowledgment;
