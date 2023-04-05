@@ -50,7 +50,11 @@ public class UserEventServiceImpl implements UserEventService {
                     event.setPayload(user);
                     event.setAggregateId(user.getId());
                     eventRepository.save(event);
-                    return messageSender.sendMessage("events", 0, String.valueOf(user.hashCode()), event)
+                    return messageSender.sendMessage(
+                                    "events",
+                                    0,
+                                    String.valueOf(user.hashCode()),
+                                    event)
                             .then();
                 });
     }
@@ -63,7 +67,11 @@ public class UserEventServiceImpl implements UserEventService {
         event.setPayload(passwordEncoder.encode(newPassword));
         event.setType(EventType.RESET_PASSWORD);
         eventRepository.save(event);
-        return messageSender.sendMessage("events", 0, userId, event)
+        return messageSender.sendMessage(
+                        "events",
+                        0,
+                        userId,
+                        event)
                 .then();
     }
 
@@ -84,7 +92,11 @@ public class UserEventServiceImpl implements UserEventService {
                     event.setPayload(password);
                     event.setType(EventType.UPDATE_PASSWORD);
                     eventRepository.save(event);
-                    return messageSender.sendMessage("events", 0, userId, event)
+                    return messageSender.sendMessage(
+                                    "events",
+                                    0,
+                                    userId,
+                                    event)
                             .then();
                 });
     }
@@ -103,7 +115,11 @@ public class UserEventServiceImpl implements UserEventService {
                     event.setType(EventType.USER_CREATE);
                     event.setPayload(u);
                     eventRepository.save(event);
-                    return messageSender.sendMessage("events", 0, String.valueOf(user.hashCode()), event)
+                    return messageSender.sendMessage(
+                                    "events",
+                                    0,
+                                    String.valueOf(user.hashCode()),
+                                    event)
                             .then();
                 });
     }
@@ -133,7 +149,11 @@ public class UserEventServiceImpl implements UserEventService {
         event.setAggregateId(jwtService.retrieveUserId(token.getToken()));
         event.setType(EventType.USER_ACTIVATE);
         eventRepository.save(event);
-        return messageSender.sendMessage("events", 0, String.valueOf(token.hashCode()), event)
+        return messageSender.sendMessage(
+                        "events",
+                        0,
+                        String.valueOf(token.hashCode()),
+                        event)
                 .then();
     }
 
@@ -144,7 +164,11 @@ public class UserEventServiceImpl implements UserEventService {
         event.setType(EventType.USER_DELETE);
         event.setAggregateId(id);
         eventRepository.save(event);
-        return messageSender.sendMessage("events", 0, id, event)
+        return messageSender.sendMessage(
+                        "events",
+                        0,
+                        id,
+                        event)
                 .then();
     }
 

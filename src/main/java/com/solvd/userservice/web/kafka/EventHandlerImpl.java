@@ -21,12 +21,12 @@ import com.solvd.userservice.repository.UserRepository;
 import com.solvd.userservice.service.JwtService;
 import com.solvd.userservice.web.mapper.MailDataMapper;
 import com.solvd.userservice.web.security.jwt.JwtTokenType;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import reactor.kafka.receiver.KafkaReceiver;
-import reactor.kafka.receiver.ReceiverRecord;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,29 +35,21 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class EventHandlerImpl implements EventHandler {
 
-    private final KafkaReceiver<String, Object> receiver;
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final MessageSender messageSender;
     private final MailDataMapper mailDataMapper;
     private final Gson gson;
 
-    @PostConstruct
-    public void init() {
-        handle();
-    }
-
     @Override
-    public void handle() {
-        receiver.receive()
-                .subscribe(r -> {
-                    userCreateEvent(r);
-                    userUpdateEvent(r);
-                    userDeleteEvent(r);
-                    userActivateEvent(r);
-                    userResetPasswordEvent(r);
-                    userUpdatePasswordEvent(r);
-                });
+    @KafkaListener(topics = "events")
+    public void handle(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+        userCreateEvent(record, acknowledgment);
+        userUpdateEvent(record, acknowledgment);
+        userDeleteEvent(record, acknowledgment);
+        userActivateEvent(record, acknowledgment);
+        userResetPasswordEvent(record, acknowledgment);
+        userUpdatePasswordEvent(record, acknowledgment);
     }
 
     private User parseUser(LinkedTreeMap<String, String> linkedTreeMap) {
@@ -92,8 +84,8 @@ public class EventHandlerImpl implements EventHandler {
         return aggregate;
     }
 
-    private void userCreateEvent(ReceiverRecord<String, Object> r) {
-        String json = (String) r.value();
+    private void userCreateEvent(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+        String json = (String) record.value();
         UserCreateEvent event = gson.fromJson(json, UserCreateEvent.class);
         if (event.getType() == EventType.USER_CREATE) {
             LinkedTreeMap<String, String> payload = (LinkedTreeMap) event.getPayload();
@@ -110,12 +102,12 @@ public class EventHandlerImpl implements EventHandler {
                     0,
                     String.valueOf(user.hashCode()),
                     mailDataMapper.toDto(new MailData(MailType.ACTIVATION, params))).subscribe();
+            acknowledgment.acknowledge();
         }
-        r.receiverOffset().acknowledge();
     }
 
-    private void userUpdateEvent(ReceiverRecord<String, Object> r) {
-        String json = (String) r.value();
+    private void userUpdateEvent(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+        String json = (String) record.value();
         UserUpdateEvent event = gson.fromJson(json, UserUpdateEvent.class);
         if (event.getType() == EventType.USER_UPDATE) {
             LinkedTreeMap<String, String> payload = (LinkedTreeMap) event.getPayload();
@@ -126,21 +118,21 @@ public class EventHandlerImpl implements EventHandler {
             aggregate.flatMap(AggregateFactory::toUser)
                     .flatMap(userRepository::save)
                     .subscribe();
+            acknowledgment.acknowledge();
         }
-        r.receiverOffset().acknowledge();
     }
 
-    private void userDeleteEvent(ReceiverRecord<String, Object> r) {
-        String json = (String) r.value();
+    private void userDeleteEvent(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+        String json = (String) record.value();
         UserDeleteEvent event = gson.fromJson(json, UserDeleteEvent.class);
         if (event.getType() == EventType.USER_DELETE) {
             userRepository.deleteById(event.getAggregateId()).subscribe();
+            acknowledgment.acknowledge();
         }
-        r.receiverOffset().acknowledge();
     }
 
-    private void userActivateEvent(ReceiverRecord<String, Object> r) {
-        String json = (String) r.value();
+    private void userActivateEvent(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+        String json = (String) record.value();
         UserActivateEvent event = gson.fromJson(json, UserActivateEvent.class);
         if (event.getType() == EventType.USER_ACTIVATE) {
             Mono<User> user = userRepository.findById(event.getAggregateId());
@@ -149,12 +141,12 @@ public class EventHandlerImpl implements EventHandler {
             aggregate.flatMap(AggregateFactory::toUser)
                     .flatMap(userRepository::save)
                     .subscribe();
+            acknowledgment.acknowledge();
         }
-        r.receiverOffset().acknowledge();
     }
 
-    private void userResetPasswordEvent(ReceiverRecord<String, Object> r) {
-        String json = (String) r.value();
+    private void userResetPasswordEvent(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+        String json = (String) record.value();
         ResetPasswordEvent event = gson.fromJson(json, ResetPasswordEvent.class);
         if (event.getType() == EventType.RESET_PASSWORD) {
             LinkedTreeMap<String, String> payload = (LinkedTreeMap) event.getPayload();
@@ -166,12 +158,12 @@ public class EventHandlerImpl implements EventHandler {
             aggregate.flatMap(AggregateFactory::toUser)
                     .flatMap(userRepository::save)
                     .subscribe();
+            acknowledgment.acknowledge();
         }
-        r.receiverOffset().acknowledge();
     }
 
-    private void userUpdatePasswordEvent(ReceiverRecord<String, Object> r) {
-        String json = (String) r.value();
+    private void userUpdatePasswordEvent(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+        String json = (String) record.value();
         UpdatePasswordEvent event = gson.fromJson(json, UpdatePasswordEvent.class);
         if (event.getType() == EventType.UPDATE_PASSWORD) {
             LinkedTreeMap<String, String> payload = (LinkedTreeMap) event.getPayload();
@@ -183,8 +175,8 @@ public class EventHandlerImpl implements EventHandler {
             aggregate.flatMap(AggregateFactory::toUser)
                     .flatMap(userRepository::save)
                     .subscribe();
+            acknowledgment.acknowledge();
         }
-        r.receiverOffset().acknowledge();
     }
 
 }

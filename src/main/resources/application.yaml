@@ -27,6 +27,14 @@ spring:
     user: ${POSTGRES_USERNAME}
   kafka:
     bootstrap-servers: ${KAFKA_HOST}
+    listener:
+      ack-mode: manual_immediate
+    consumer:
+      properties:
+        group.id: 1
+        bootstrap-servers: ${KAFKA_HOST}
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 security:
   jwt:

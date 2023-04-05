@@ -31,12 +31,6 @@ public class WebConfig {
         return new XMLDocument(new File("src/main/resources/kafka/producer.xml"));
     }
 
-    @SneakyThrows
-    @Bean
-    public XML consumerXml() {
-        return new XMLDocument(new File("src/main/resources/kafka/consumer.xml"));
-    }
-
     @Bean
     public Gson gson() {
         return new GsonBuilder().registerTypeAdapter(LocalDateTime.class,
