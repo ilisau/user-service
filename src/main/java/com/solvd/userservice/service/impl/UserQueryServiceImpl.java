@@ -5,7 +5,7 @@ import com.solvd.userservice.domain.exception.UserNotFoundException;
 import com.solvd.userservice.repository.UserRepository;
 import com.solvd.userservice.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.ReactiveRedisOperations;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -14,21 +14,36 @@ import reactor.core.publisher.Mono;
 public class UserQueryServiceImpl implements UserQueryService {
 
     private final UserRepository userRepository;
+    private final ReactiveRedisOperations<String, User> userOps;
 
     @Override
-    @Cacheable(value = "users", key = "#id")
     public Mono<User> getById(String id) {
         Mono<User> error = Mono.error(new UserNotFoundException("User with id " + id + " not found"));
-        return userRepository.findById(id)
-                .switchIfEmpty(error);
+        return userOps.opsForValue()
+                .get(id)
+                .switchIfEmpty(userRepository.findById(id)
+                        .switchIfEmpty(error)
+                        .onErrorResume(Mono::error)
+                        .map(u -> {
+                            userOps.opsForValue().set(id, u).subscribe();
+                            return u;
+                        }))
+                .flatMap(u -> userOps.opsForValue().get(id));
     }
 
     @Override
-    @Cacheable(value = "users", key = "#email")
     public Mono<User> getByEmail(String email) {
         Mono<User> error = Mono.error(new UserNotFoundException("User with email " + email + " not found"));
-        return userRepository.findByEmail(email)
-                .switchIfEmpty(error);
+        return userOps.opsForValue()
+                .get(email)
+                .switchIfEmpty(userRepository.findByEmail(email)
+                        .switchIfEmpty(error)
+                        .onErrorResume(Mono::error)
+                        .map(u -> {
+                            userOps.opsForValue().set(email, u).subscribe();
+                            return u;
+                        }))
+                .flatMap(u -> userOps.opsForValue().get(email));
     }
 
 }
