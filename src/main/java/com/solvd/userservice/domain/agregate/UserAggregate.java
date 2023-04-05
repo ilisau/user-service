@@ -1,10 +1,10 @@
-package com.solvd.userservice.web.dto;
+package com.solvd.userservice.domain.agregate;
 
 import com.solvd.userservice.domain.User;
 import lombok.Data;
 
 @Data
-public class UserDto {
+public class UserAggregate {
 
     private String id;
     private String name;

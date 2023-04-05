@@ -1,44 +1,44 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: user-client-postgres
+  name: user-client-mongo
 spec:
-  serviceName: user-client-postgres
+  serviceName: user-client-mongo
   replicas: 1
   selector:
     matchLabels:
-      app: user-client-postgres
+      app: user-client-mongo
   template:
     metadata:
       labels:
-        app: user-client-postgres
+        app: user-client-mongo
     spec:
       containers:
         - name: user-client-db
-          image: postgres:15.1-alpine
+          image: mongo:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 5432
+            - containerPort: 27017
           env:
-            - name: POSTGRES_USER
+            - name: MONGO_INITDB_ROOT_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: pg-secrets
-                  key: POSTGRES_USER
-            - name: POSTGRES_PASSWORD
+                  name: mongo-secrets
+                  key: MONGO_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: pg-secrets
-                  key: POSTGRES_PASSWORD
-            - name: POSTGRES_DB
+                  name: mongo-secrets
+                  key: MONGO_PASSWORD
+            - name: MONGO_DB
               value: users
       volumes:
-        - name: db-mail-client-data
+        - name: db-user-client-data
           hostPath:
             path: /data-user-client
   volumeClaimTemplates:
     - metadata:
-        name: db-mail-client-data
+        name: db-user-client-data
       spec:
         accessModes:
           - "ReadWriteOnce"

@@ -1,17 +1,27 @@
 package com.solvd.userservice.web;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
 import com.jcabi.xml.XML;
 import com.jcabi.xml.XMLDocument;
-import io.r2dbc.spi.ConnectionFactory;
+import com.solvd.userservice.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.r2dbc.core.DatabaseClient;
+import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
+import org.springframework.data.redis.core.ReactiveRedisOperations;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Configuration
 @RequiredArgsConstructor
@@ -22,17 +32,28 @@ public class WebConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public DatabaseClient databaseClient(ConnectionFactory connectionFactory) {
-        return DatabaseClient.builder()
-                .connectionFactory(connectionFactory)
-                .build();
-    }
-
     @SneakyThrows
     @Bean
     public XML producerXml() {
         return new XMLDocument(new File("src/main/resources/kafka/producer.xml"));
+    }
+
+    @Bean
+    public Gson gson() {
+        return new GsonBuilder().registerTypeAdapter(LocalDateTime.class,
+                        (JsonDeserializer<LocalDateTime>) (json1, typeOfT, context) ->
+                                LocalDateTime.parse(json1.getAsString(),
+                                        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")))
+                .create();
+    }
+
+    @Bean
+    public ReactiveRedisOperations<String, User> redisOperations(ReactiveRedisConnectionFactory factory) {
+        Jackson2JsonRedisSerializer<User> serializer = new Jackson2JsonRedisSerializer<>(User.class);
+        RedisSerializationContext.RedisSerializationContextBuilder<String, User> builder =
+                RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
+        RedisSerializationContext<String, User> context = builder.value(serializer).build();
+        return new ReactiveRedisTemplate<>(factory, context);
     }
 
 }

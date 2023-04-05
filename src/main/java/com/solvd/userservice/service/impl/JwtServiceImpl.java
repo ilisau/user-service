@@ -120,10 +120,10 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public Long retrieveUserId(String token) {
-        return Long.valueOf(parse(token)
+    public String retrieveUserId(String token) {
+        return parse(token)
                 .get("id")
-                .toString());
+                .toString();
     }
 
 }

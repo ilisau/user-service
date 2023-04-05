@@ -6,22 +6,35 @@ spring:
     name: user-client
   config:
     import: optional:file:.env[.properties]
-  r2dbc:
-    url: r2dbc:postgresql://${DB_HOST}:5432/${POSTGRES_DB}?currentSchema=${POSTGRES_DB}
+  datasource:
+    url: jdbc:postgresql://${PG_HOST}:5432/${POSTGRES_DB}
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  data:
+    mongodb:
+      database: ${MONGO_DB}
+      username: ${MONGO_USERNAME}
+      password: ${MONGO_PASSWORD}
+      host: ${DB_HOST}
+      port: 27017
+      authentication-database: admin
   liquibase:
     change-log: classpath:db/db.changelog.yaml
-    default-schema: ${POSTGRES_DB}
-    url: jdbc:postgresql://${DB_HOST}:5432/${POSTGRES_DB}?currentSchema=${POSTGRES_DB}
+    enabled: true
+    url: jdbc:postgresql://${PG_HOST}:5432/${POSTGRES_DB}
     password: ${POSTGRES_PASSWORD}
     user: ${POSTGRES_USERNAME}
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: none
   kafka:
     bootstrap-servers: ${KAFKA_HOST}
+    listener:
+      ack-mode: manual_immediate
+    consumer:
+      properties:
+        group.id: 1
+        bootstrap-servers: ${KAFKA_HOST}
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 security:
   jwt:

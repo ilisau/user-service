@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-client-mongo
+spec:
+  selector:
+    app: user-client-mongo
+  ports:
+    - port: 27017
+      targetPort: 27017
