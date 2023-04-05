@@ -10,6 +10,7 @@ import com.solvd.userservice.domain.event.EventType;
 import com.solvd.userservice.domain.event.UserUpdateEvent;
 import com.solvd.userservice.domain.exception.UserNotFoundException;
 import com.solvd.userservice.repository.UserRepository;
+import com.solvd.userservice.web.kafka.parser.UserParser;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.support.Acknowledgment;
@@ -22,6 +23,7 @@ public class UserUpdateEventHandler implements EventHandler {
 
     private final UserRepository userRepository;
     private final Gson gson;
+    private final UserParser userParser;
 
     @Override
     public void handle(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
@@ -29,7 +31,7 @@ public class UserUpdateEventHandler implements EventHandler {
         UserUpdateEvent event = gson.fromJson(json, UserUpdateEvent.class);
         if (event.getType() == EventType.USER_UPDATE) {
             LinkedTreeMap<String, String> payload = (LinkedTreeMap) event.getPayload();
-            User user = parseUser(payload);
+            User user = userParser.parse(payload);
             event.setPayload(user);
             Mono<UserAggregate> aggregate = getUserAggregate(event);
             aggregate = event.copyTo(aggregate);
@@ -38,20 +40,6 @@ public class UserUpdateEventHandler implements EventHandler {
                     .subscribe();
             acknowledgment.acknowledge();
         }
-    }
-
-    private User parseUser(LinkedTreeMap<String, String> linkedTreeMap) {
-        User user = new User();
-        user.setId(linkedTreeMap.get("id"));
-        user.setName(linkedTreeMap.get("name"));
-        user.setSurname(linkedTreeMap.get("surname"));
-        user.setEmail(linkedTreeMap.get("email"));
-        if (linkedTreeMap.get("role") != null) {
-            user.setRole(User.Role.valueOf(linkedTreeMap.get("role")));
-        }
-        user.setPassword(linkedTreeMap.get("password"));
-        user.setActivated(Boolean.getBoolean(linkedTreeMap.get("isActivated")));
-        return user;
     }
 
     private Mono<UserAggregate> getUserAggregate(AbstractEvent event) {

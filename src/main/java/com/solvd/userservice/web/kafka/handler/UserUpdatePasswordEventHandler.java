@@ -9,6 +9,7 @@ import com.solvd.userservice.domain.agregate.UserAggregate;
 import com.solvd.userservice.domain.event.EventType;
 import com.solvd.userservice.domain.event.UpdatePasswordEvent;
 import com.solvd.userservice.repository.UserRepository;
+import com.solvd.userservice.web.kafka.parser.PasswordParser;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.support.Acknowledgment;
@@ -21,6 +22,7 @@ public class UserUpdatePasswordEventHandler implements EventHandler {
 
     private final UserRepository userRepository;
     private final Gson gson;
+    private final PasswordParser passwordParser;
 
     @Override
     public void handle(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
@@ -28,7 +30,7 @@ public class UserUpdatePasswordEventHandler implements EventHandler {
         UpdatePasswordEvent event = gson.fromJson(json, UpdatePasswordEvent.class);
         if (event.getType() == EventType.UPDATE_PASSWORD) {
             LinkedTreeMap<String, String> payload = (LinkedTreeMap) event.getPayload();
-            Password password = parsePassword(payload);
+            Password password = passwordParser.parse(payload);
             event.setPayload(password);
             Mono<User> user = userRepository.findById(event.getAggregateId());
             Mono<UserAggregate> aggregate = AggregateFactory.toAggregate(user);
@@ -38,13 +40,6 @@ public class UserUpdatePasswordEventHandler implements EventHandler {
                     .subscribe();
             acknowledgment.acknowledge();
         }
-    }
-
-    private Password parsePassword(LinkedTreeMap<String, String> linkedTreeMap) {
-        Password password = new Password();
-        password.setNewPassword(linkedTreeMap.get("newPassword"));
-        password.setOldPassword(linkedTreeMap.get("oldPassword"));
-        return password;
     }
 
 }
