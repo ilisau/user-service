@@ -5,19 +5,15 @@ import com.solvd.userservice.domain.User;
 import com.solvd.userservice.domain.jwt.JwtToken;
 import reactor.core.publisher.Mono;
 
-public interface UserService {
+public interface UserEventService {
 
-    Mono<User> getById(String id);
-
-    Mono<User> getByEmail(String email);
-
-    Mono<User> update(User user);
+    Mono<Void> update(User user);
 
     Mono<Void> updatePassword(String userId, String newPassword);
 
     Mono<Void> updatePassword(String userId, Password password);
 
-    Mono<User> create(User user);
+    Mono<Void> create(User user);
 
     Mono<Void> activate(JwtToken token);
 

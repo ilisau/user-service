@@ -1,22 +1,20 @@
 package com.solvd.userservice.web;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
 import com.jcabi.xml.XML;
 import com.jcabi.xml.XMLDocument;
-import com.solvd.userservice.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
-import org.springframework.data.redis.core.ReactiveRedisOperations;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializationContext;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Configuration
 @RequiredArgsConstructor
@@ -34,15 +32,12 @@ public class WebConfig {
     }
 
     @Bean
-    ReactiveRedisOperations<String, User> redisOperations(ReactiveRedisConnectionFactory factory) {
-        Jackson2JsonRedisSerializer<User> serializer = new Jackson2JsonRedisSerializer<User>(User.class);
-        RedisSerializationContext.RedisSerializationContextBuilder<String, User> builder =
-                RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
-        RedisSerializationContext<String, User> context = builder.value(serializer)
-                .hashValue(serializer)
-                .build();
-
-        return new ReactiveRedisTemplate<>(factory, context);
+    public Gson gson() {
+        return new GsonBuilder().registerTypeAdapter(LocalDateTime.class,
+                        (JsonDeserializer<LocalDateTime>) (json1, typeOfT, context) ->
+                                LocalDateTime.parse(json1.getAsString(),
+                                        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")))
+                .create();
     }
 
 }

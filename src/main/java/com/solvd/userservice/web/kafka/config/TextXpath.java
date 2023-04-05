@@ -1,4 +1,4 @@
-package com.solvd.userservice.web.kafka;
+package com.solvd.userservice.web.kafka.config;
 
 import com.jcabi.xml.XML;
 import lombok.RequiredArgsConstructor;

@@ -6,6 +6,11 @@ spring:
     name: user-client
   config:
     import: optional:file:.env[.properties]
+  datasource:
+    url: jdbc:postgresql://${PG_HOST}:5432/${POSTGRES_DB}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
   data:
     mongodb:
       database: ${MONGO_DB}
@@ -16,13 +21,20 @@ spring:
       authentication-database: admin
   liquibase:
     change-log: classpath:db/db.changelog.yaml
-    default-schema: ${MONGO_DB}
-    url: jdbc:mongodb://${DB_HOST}:27017/${MONGO_DB}
-    password: ${MONGO_USERNAME}
-    user: ${MONGO_PASSWORD}
-    driver-class-name: liquibase.ext.mongodb.database.MongoClientDriver
+    enabled: true
+    url: jdbc:postgresql://${PG_HOST}:5432/${POSTGRES_DB}
+    password: ${POSTGRES_PASSWORD}
+    user: ${POSTGRES_USERNAME}
   kafka:
     bootstrap-servers: ${KAFKA_HOST}
+    listener:
+      ack-mode: manual_immediate
+    consumer:
+      properties:
+        group.id: 1
+        bootstrap-servers: ${KAFKA_HOST}
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 security:
   jwt:
