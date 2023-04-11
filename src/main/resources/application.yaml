@@ -19,6 +19,12 @@ spring:
       host: ${DB_HOST}
       port: 27017
       authentication-database: admin
+  liquibase:
+    change-log: classpath:db/db.changelog.yaml
+    enabled: true
+    url: jdbc:postgresql://${PG_HOST}:5432/${POSTGRES_DB}
+    password: ${POSTGRES_PASSWORD}
+    user: ${POSTGRES_USERNAME}
   kafka:
     bootstrap-servers: ${KAFKA_HOST}
     listener:

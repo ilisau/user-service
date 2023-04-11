@@ -19,6 +19,20 @@ spec:
           ports:
             - containerPort: 8081
           env:
+            - name: PG_HOST
+              value: postgres-kafka
+            - name: POSTGRES_DB
+              value: event_store
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secrets-kafka
+                  key: POSTGRES_USERNAME
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secrets-kafka
+                  key: POSTGRES_PASSWORD
             - name: MONGO_USERNAME
               valueFrom:
                 secretKeyRef:

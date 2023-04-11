@@ -25,6 +25,7 @@
 		<mapstruct.version>1.5.2.Final</mapstruct.version>
 		<validation.version>3.0.2</validation.version>
 		<hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
+		<liquibase.version>4.18.0</liquibase.version>
 		<jsonwebtoken.version>0.11.5</jsonwebtoken.version>
 		<spring-cloud-resilience.version>3.0.0</spring-cloud-resilience.version>
 		<xembly.version>0.28.1</xembly.version>
@@ -129,6 +130,12 @@
 			<optional>true</optional>
 			<version>${lombok.version}</version>
 		</dependency>
+
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase.version}</version>
+        </dependency>
 
 		<dependency>
 			<groupId>org.mapstruct</groupId>

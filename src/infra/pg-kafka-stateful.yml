@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-kafka
+spec:
+  serviceName: postgres-kafka
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-kafka
+  template:
+    metadata:
+      labels:
+        app: postgres-kafka
+    spec:
+      containers:
+        - name: kafka-db
+          image: postgres:15.1-alpine
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secrets-kafka
+                  key: POSTGRES_USERNAME
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secrets-kafka
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              value: event_store
+      volumes:
+        - name: db-data-kafka
+          hostPath:
+            path: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: db-data-kafka
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: 1Gi
