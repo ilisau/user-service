@@ -1,6 +1,7 @@
 package com.solvd.userservice.web.controller;
 
 import com.solvd.userservice.domain.exception.ExceptionMessage;
+import com.solvd.userservice.domain.exception.InvalidTokenException;
 import com.solvd.userservice.domain.exception.PasswordMismatchException;
 import com.solvd.userservice.domain.exception.UserAlreadyExistsException;
 import com.solvd.userservice.domain.exception.UserNotFoundException;
@@ -80,6 +81,12 @@ public class GlobalControllerAdvice {
         errors.forEach(error -> details.put(error.getField(), error.getDefaultMessage()));
         exceptionBody.setDetails(details);
         return exceptionBody;
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionMessage handleInvalidTokenException(InvalidTokenException e) {
+        return new ExceptionMessage(e.getMessage());
     }
 
     @ExceptionHandler

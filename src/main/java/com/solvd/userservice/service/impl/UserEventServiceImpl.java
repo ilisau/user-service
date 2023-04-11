@@ -160,6 +160,7 @@ public class UserEventServiceImpl implements UserEventService {
     @Override
     @CacheEvict(value = "users", key = "#id")
     public Mono<Void> delete(String id) {
+        //TODO change all cacheevicts to ops
         AbstractEvent event = new UserDeleteEvent();
         event.setType(EventType.USER_DELETE);
         event.setAggregateId(id);

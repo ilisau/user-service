@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +30,13 @@ public class UserCreateEventHandler implements EventHandler {
         if (event.getType() == EventType.USER_CREATE) {
             LinkedTreeMap<String, String> payload = (LinkedTreeMap) event.getPayload();
             User user = userParser.parse(payload);
-            userRepository.save(user).subscribe();
-            mailService.sendActivationMail(user);
+            Mono<User> savedUser = userRepository.save(user);
+            savedUser.subscribe();
+            savedUser.map(u -> {
+                        mailService.sendActivationMail(user);
+                        return u;
+                    })
+                    .subscribe();
             acknowledgment.acknowledge();
         }
     }
