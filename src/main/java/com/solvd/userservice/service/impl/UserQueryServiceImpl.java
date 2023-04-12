@@ -34,16 +34,8 @@ public class UserQueryServiceImpl implements UserQueryService {
     @Override
     public Mono<User> getByEmail(String email) {
         Mono<User> error = Mono.error(new UserNotFoundException("User with email " + email + " not found"));
-        return userOps.opsForValue()
-                .get(email)
-                .switchIfEmpty(userRepository.findByEmail(email)
-                        .switchIfEmpty(error)
-                        .onErrorResume(Mono::error)
-                        .map(u -> {
-                            userOps.opsForValue().set(email, u).subscribe();
-                            return u;
-                        }))
-                .flatMap(u -> userOps.opsForValue().get(email));
+        return userRepository.findByEmail(email)
+                .switchIfEmpty(error);
     }
 
 }
