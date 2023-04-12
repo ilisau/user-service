@@ -13,5 +13,3 @@ kubectl apply -f user-client-deployment.yml
 kubectl apply -f mongo-stateful.yml
 kubectl apply -f redis-stateful.yml
 kubectl apply -f pg-kafka-stateful.yml
-
-minikube service user-client

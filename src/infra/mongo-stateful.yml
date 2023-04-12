@@ -30,7 +30,7 @@ spec:
                 secretKeyRef:
                   name: mongo-secrets
                   key: MONGO_PASSWORD
-            - name: MONGO_DB
+            - name: MONGO_INIT_DB_DATABASE
               value: users
       volumes:
         - name: db-user-client-data

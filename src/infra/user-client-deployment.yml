@@ -52,3 +52,5 @@ spec:
                 configMapKeyRef:
                   name: user-client-configmap
                   key: KAFKA_HOST
+            - name: REDIS_HOST
+              value: redis
