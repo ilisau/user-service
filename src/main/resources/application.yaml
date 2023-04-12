@@ -19,6 +19,8 @@ spring:
       host: ${DB_HOST}
       port: 27017
       authentication-database: admin
+    redis:
+      host: ${REDIS_HOST}
   liquibase:
     change-log: classpath:db/db.changelog.yaml
     enabled: true
