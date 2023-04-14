@@ -1,0 +1,1 @@
+kubectl apply -f src/infra/user-service-rules.yml

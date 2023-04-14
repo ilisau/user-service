@@ -38,7 +38,12 @@ This service by default use the following variables from .env file:
 6. `KAFKA_HOST` - host with port for Kafka bootstrap server
 
 To run application you need to run
+
 ```console
  sh run.sh
+ sh istio-setup.sh
  ```
+
+After all commands are executed, you will have Istio ```AuthorizationPolicy``` implemented - all requests to this
+service are available only from ```qaprotours``` app.
 
