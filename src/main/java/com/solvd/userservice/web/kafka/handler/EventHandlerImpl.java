@@ -19,7 +19,8 @@ public class EventHandlerImpl implements EventHandler {
 
     @Override
     @KafkaListener(topics = "events")
-    public void handle(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+    public void handle(final ConsumerRecord<String, Object> record,
+                       final Acknowledgment acknowledgment) {
         userCreateEventHandler.handle(record, acknowledgment);
         userUpdateEventHandler.handle(record, acknowledgment);
         userDeleteEventHandler.handle(record, acknowledgment);

@@ -7,8 +7,20 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
+    /**
+     * Maps a UserDto to a User.
+     *
+     * @param user User
+     * @return UserDto
+     */
     UserDto toDto(User user);
 
+    /**
+     * Maps a User to a UserDto.
+     *
+     * @param userDto UserDto
+     * @return User
+     */
     User toEntity(UserDto userDto);
 
 }

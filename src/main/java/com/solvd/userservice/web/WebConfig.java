@@ -27,32 +27,67 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class WebConfig {
 
+    /**
+     * Create password encoder.
+     *
+     * @return the password encoder
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Get xml producer file.
+     *
+     * @return the xml
+     */
     @SneakyThrows
     @Bean
     public XML producerXml() {
-        return new XMLDocument(new File("src/main/resources/kafka/producer.xml"));
+        return new XMLDocument(
+                new File("src/main/resources/kafka/producer.xml")
+        );
     }
 
+    /**
+     * Create json builder.
+     *
+     * @return the xml
+     */
     @Bean
     public Gson gson() {
-        return new GsonBuilder().registerTypeAdapter(LocalDateTime.class,
-                        (JsonDeserializer<LocalDateTime>) (json1, typeOfT, context) ->
-                                LocalDateTime.parse(json1.getAsString(),
-                                        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")))
+        String pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+        return new GsonBuilder().registerTypeAdapter(
+                        LocalDateTime.class,
+                        (JsonDeserializer<LocalDateTime>)
+                                (json1, typeOfT, context) ->
+                                        LocalDateTime.parse(
+                                                json1.getAsString(),
+                                                DateTimeFormatter
+                                                        .ofPattern(pattern)
+                                        ))
                 .create();
     }
 
+    /**
+     * Create redis operations.
+     *
+     * @param factory the factory
+     * @return the reactive redis operations
+     */
     @Bean
-    public ReactiveRedisOperations<String, User> redisOperations(ReactiveRedisConnectionFactory factory) {
-        Jackson2JsonRedisSerializer<User> serializer = new Jackson2JsonRedisSerializer<>(User.class);
-        RedisSerializationContext.RedisSerializationContextBuilder<String, User> builder =
-                RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
-        RedisSerializationContext<String, User> context = builder.value(serializer).build();
+    public ReactiveRedisOperations<String, User> redisOperations(
+            final ReactiveRedisConnectionFactory factory
+    ) {
+        Jackson2JsonRedisSerializer<User> serializer =
+                new Jackson2JsonRedisSerializer<>(User.class);
+        RedisSerializationContext
+                .RedisSerializationContextBuilder<String, User> builder =
+                RedisSerializationContext.newSerializationContext(
+                        new StringRedisSerializer());
+        RedisSerializationContext<String, User> context =
+                builder.value(serializer).build();
         return new ReactiveRedisTemplate<>(factory, context);
     }
 

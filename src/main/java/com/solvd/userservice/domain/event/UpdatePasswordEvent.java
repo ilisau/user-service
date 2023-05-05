@@ -9,12 +9,12 @@ import reactor.core.publisher.Mono;
 public class UpdatePasswordEvent extends AbstractEvent {
 
     @Override
-    public Mono<UserAggregate> copyTo(Mono<UserAggregate> aggregate) {
-        Password password = (Password) payload;
+    public Mono<UserAggregate> copyTo(final Mono<UserAggregate> aggregate) {
+        Password password = (Password) super.getPayload();
         return aggregate.map(u -> {
-                    u.setPassword(password.getNewPassword());
-                    return u;
-                });
+            u.setPassword(password.getNewPassword());
+            return u;
+        });
     }
 
 }

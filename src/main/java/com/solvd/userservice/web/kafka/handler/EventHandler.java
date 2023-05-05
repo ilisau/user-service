@@ -5,6 +5,13 @@ import org.springframework.kafka.support.Acknowledgment;
 
 public interface EventHandler {
 
-    void handle(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment);
+    /**
+     * Handle the event.
+     *
+     * @param record         the record
+     * @param acknowledgment the acknowledgment
+     */
+    void handle(ConsumerRecord<String, Object> record,
+                Acknowledgment acknowledgment);
 
 }

@@ -5,6 +5,7 @@ import com.solvd.userservice.domain.MailType;
 import com.solvd.userservice.domain.User;
 import com.solvd.userservice.service.JwtService;
 import com.solvd.userservice.service.MailService;
+import com.solvd.userservice.web.kafka.KafkaMessage;
 import com.solvd.userservice.web.kafka.MessageSender;
 import com.solvd.userservice.web.mapper.MailDataMapper;
 import com.solvd.userservice.web.security.jwt.JwtTokenType;
@@ -23,7 +24,7 @@ public class MailServiceImpl implements MailService {
     private final JwtService jwtService;
 
     @Override
-    public void sendActivationMail(User user) {
+    public void sendActivationMail(final User user) {
         Map<String, Object> params = new HashMap<>();
         String token = jwtService.generateToken(JwtTokenType.ACTIVATION, user);
         params.put("token", token);
@@ -31,10 +32,16 @@ public class MailServiceImpl implements MailService {
         params.put("user.surname", user.getSurname());
         params.put("user.email", user.getEmail());
         params.put("user.id", user.getId());
-        messageSender.sendMessage("mail",
-                0,
-                String.valueOf(user.hashCode()),
-                mailDataMapper.toDto(new MailData(MailType.ACTIVATION, params))).subscribe();
+        KafkaMessage message = new KafkaMessage();
+        message.setTopic("mail");
+        message.setKey(String.valueOf(user.hashCode()));
+        message.setPartition(0);
+        messageSender.sendMessage(message,
+                        mailDataMapper.toDto(
+                                new MailData(MailType.ACTIVATION, params)
+                        )
+                )
+                .subscribe();
     }
 
 }

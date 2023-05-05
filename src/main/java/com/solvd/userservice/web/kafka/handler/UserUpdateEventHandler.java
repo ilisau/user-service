@@ -26,11 +26,13 @@ public class UserUpdateEventHandler implements EventHandler {
     private final UserParser userParser;
 
     @Override
-    public void handle(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+    public void handle(final ConsumerRecord<String, Object> record,
+                       final Acknowledgment acknowledgment) {
         String json = (String) record.value();
         UserUpdateEvent event = gson.fromJson(json, UserUpdateEvent.class);
         if (event.getType() == EventType.USER_UPDATE) {
-            LinkedTreeMap<String, String> payload = (LinkedTreeMap) event.getPayload();
+            LinkedTreeMap<String, String> payload =
+                    (LinkedTreeMap) event.getPayload();
             User user = userParser.parse(payload);
             event.setPayload(user);
             Mono<UserAggregate> aggregate = getUserAggregate(event);
@@ -42,10 +44,12 @@ public class UserUpdateEventHandler implements EventHandler {
         }
     }
 
-    private Mono<UserAggregate> getUserAggregate(AbstractEvent event) {
+    private Mono<UserAggregate> getUserAggregate(final AbstractEvent event) {
         Mono<UserAggregate> aggregate = null;
         if (event.getAggregateId() != null) {
-            Mono<User> error = Mono.error(new UserNotFoundException("User with id " + event.getAggregateId() + " not found"));
+            Mono<User> error = Mono.error(
+                    new UserNotFoundException("User with id "
+                            + event.getAggregateId() + " not found"));
             Mono<User> user = userRepository.findById(event.getAggregateId())
                     .switchIfEmpty(error);
             aggregate = AggregateFactory.toAggregate(user);

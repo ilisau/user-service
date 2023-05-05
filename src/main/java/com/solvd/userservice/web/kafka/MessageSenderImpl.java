@@ -17,14 +17,17 @@ public class MessageSenderImpl implements MessageSender {
     private final KafkaSender<String, Object> sender;
 
     @Override
-    public Flux<SenderResult<MailDataDto>> sendMessage(String topic, int partition, String key, MailDataDto data) {
+    public Flux<SenderResult<MailDataDto>> sendMessage(
+            final KafkaMessage message,
+            final MailDataDto data
+    ) {
         return sender.send(
                 Mono.just(
                         SenderRecord.create(
-                                topic,
-                                partition,
+                                message.getTopic(),
+                                message.getPartition(),
                                 System.currentTimeMillis(),
-                                key,
+                                message.getKey(),
                                 data,
                                 null
                         )
@@ -33,14 +36,17 @@ public class MessageSenderImpl implements MessageSender {
     }
 
     @Override
-    public Flux<SenderResult<AbstractEvent>> sendMessage(String topic, int partition, String key, AbstractEvent event) {
+    public Flux<SenderResult<AbstractEvent>> sendMessage(
+            final KafkaMessage message,
+            final AbstractEvent event
+    ) {
         return sender.send(
                 Mono.just(
                         SenderRecord.create(
-                                topic,
-                                partition,
+                                message.getTopic(),
+                                message.getPartition(),
                                 System.currentTimeMillis(),
-                                key,
+                                message.getKey(),
                                 event,
                                 null
                         )

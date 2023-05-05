@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: user-client-configmap
 data:
-  KAFKA_HOST: kafka-service:9092
+  KAFKA_HOST: my-cluster-kafka-bootstrap.kafka:9092

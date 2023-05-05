@@ -8,11 +8,11 @@ import reactor.core.publisher.Mono;
 public class UserActivateEvent extends AbstractEvent {
 
     @Override
-    public Mono<UserAggregate> copyTo(Mono<UserAggregate> aggregate) {
+    public Mono<UserAggregate> copyTo(final Mono<UserAggregate> aggregate) {
         return aggregate.map(u -> {
-                    u.setActivated(true);
-                    return u;
-                });
+            u.setActivated(true);
+            return u;
+        });
     }
 
 }

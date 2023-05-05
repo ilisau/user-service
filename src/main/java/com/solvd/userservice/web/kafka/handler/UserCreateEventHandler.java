@@ -24,11 +24,13 @@ public class UserCreateEventHandler implements EventHandler {
     private final MailService mailService;
 
     @Override
-    public void handle(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+    public void handle(final ConsumerRecord<String, Object> record,
+                       final Acknowledgment acknowledgment) {
         String json = (String) record.value();
         UserCreateEvent event = gson.fromJson(json, UserCreateEvent.class);
         if (event.getType() == EventType.USER_CREATE) {
-            LinkedTreeMap<String, String> payload = (LinkedTreeMap) event.getPayload();
+            LinkedTreeMap<String, String> payload =
+                    (LinkedTreeMap) event.getPayload();
             User user = userParser.parse(payload);
             Mono<User> savedUser = userRepository.save(user);
             savedUser.subscribe();

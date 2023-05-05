@@ -2,7 +2,12 @@ package com.solvd.userservice.domain.exception;
 
 public class PasswordMismatchException extends RuntimeException {
 
-    public PasswordMismatchException(String message) {
+    /**
+     * Constructor of PasswordMismatchException.
+     *
+     * @param message message
+     */
+    public PasswordMismatchException(final String message) {
         super(message);
     }
 

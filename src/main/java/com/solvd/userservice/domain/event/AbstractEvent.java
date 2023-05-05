@@ -23,19 +23,20 @@ public abstract class AbstractEvent implements Event {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id;
+    private Long id;
 
     @Column(name = "aggregate_id")
-    protected String aggregateId;
+    private String aggregateId;
 
     @Enumerated(EnumType.STRING)
-    protected EventType type;
+    private EventType type;
 
     @CreationTimestamp
-    @JsonFormat(shape = JsonFormat.Shape.OBJECT, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-    protected LocalDateTime timestamp;
+    @JsonFormat(shape = JsonFormat.Shape.OBJECT,
+            pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    private LocalDateTime timestamp;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    protected Object payload;
+    private Object payload;
 
 }

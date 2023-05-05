@@ -5,7 +5,13 @@ import reactor.core.publisher.Mono;
 
 public abstract class AggregateFactory {
 
-    public static Mono<User> toUser(UserAggregate aggregate) {
+    /**
+     * Converts a User to a UserAggregate.
+     *
+     * @param aggregate UserAggregate
+     * @return User
+     */
+    public static Mono<User> toUser(final UserAggregate aggregate) {
         User user = new User();
         user.setId(aggregate.getId());
         user.setName(aggregate.getName());
@@ -17,7 +23,13 @@ public abstract class AggregateFactory {
         return Mono.just(user);
     }
 
-    public static Mono<UserAggregate> toAggregate(Mono<User> user) {
+    /**
+     * Converts a UserAggregate to a User.
+     *
+     * @param user User
+     * @return UserAggregate
+     */
+    public static Mono<UserAggregate> toAggregate(final Mono<User> user) {
         return user.map(u -> {
             UserAggregate aggregate = new UserAggregate();
             aggregate.setId(u.getId());

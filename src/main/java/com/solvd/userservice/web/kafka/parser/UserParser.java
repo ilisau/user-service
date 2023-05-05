@@ -7,7 +7,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserParser implements Parser<User> {
 
-    public User parse(LinkedTreeMap<String, String> linkedTreeMap) {
+    /**
+     * Parse the map to the user.
+     *
+     * @param linkedTreeMap the map
+     * @return the user
+     */
+    public User parse(final LinkedTreeMap<String, String> linkedTreeMap) {
         User user = new User();
         user.setId(linkedTreeMap.get("id"));
         user.setName(linkedTreeMap.get("name"));

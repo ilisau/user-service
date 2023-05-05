@@ -25,11 +25,14 @@ public class UserUpdatePasswordEventHandler implements EventHandler {
     private final PasswordParser passwordParser;
 
     @Override
-    public void handle(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+    public void handle(final ConsumerRecord<String, Object> record,
+                       final Acknowledgment acknowledgment) {
         String json = (String) record.value();
-        UpdatePasswordEvent event = gson.fromJson(json, UpdatePasswordEvent.class);
+        UpdatePasswordEvent event = gson.fromJson(json,
+                UpdatePasswordEvent.class);
         if (event.getType() == EventType.UPDATE_PASSWORD) {
-            LinkedTreeMap<String, String> payload = (LinkedTreeMap) event.getPayload();
+            LinkedTreeMap<String, String> payload =
+                    (LinkedTreeMap) event.getPayload();
             Password password = passwordParser.parse(payload);
             event.setPayload(password);
             Mono<User> user = userRepository.findById(event.getAggregateId());

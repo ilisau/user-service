@@ -9,8 +9,8 @@ import reactor.core.publisher.Mono;
 public class UserUpdateEvent extends AbstractEvent {
 
     @Override
-    public Mono<UserAggregate> copyTo(Mono<UserAggregate> aggregate) {
-        User user = (User) payload;
+    public Mono<UserAggregate> copyTo(final Mono<UserAggregate> aggregate) {
+        User user = (User) super.getPayload();
         return aggregate.map(u -> {
             u.setName(user.getName());
             u.setSurname(user.getSurname());

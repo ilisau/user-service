@@ -18,6 +18,7 @@ import com.solvd.userservice.repository.EventRepository;
 import com.solvd.userservice.service.JwtService;
 import com.solvd.userservice.service.UserEventService;
 import com.solvd.userservice.service.UserQueryService;
+import com.solvd.userservice.web.kafka.KafkaMessage;
 import com.solvd.userservice.web.kafka.MessageSender;
 import com.solvd.userservice.web.security.jwt.JwtTokenType;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +42,7 @@ public class UserEventServiceImpl implements UserEventService {
 
     @Override
     @CacheEvict(value = "users", key = "#user.id")
-    public Mono<Void> update(User user) {
+    public Mono<Void> update(final User user) {
         return checkIfEmailIsAvailable(user)
                 .onErrorResume(Mono::error)
                 .flatMap(u -> {
@@ -50,10 +51,12 @@ public class UserEventServiceImpl implements UserEventService {
                     event.setPayload(user);
                     event.setAggregateId(user.getId());
                     eventRepository.save(event);
+                    KafkaMessage message = new KafkaMessage();
+                    message.setTopic("events");
+                    message.setKey(String.valueOf(user.hashCode()));
+                    message.setPartition(0);
                     return messageSender.sendMessage(
-                                    "events",
-                                    0,
-                                    String.valueOf(user.hashCode()),
+                                    message,
                                     event)
                             .then();
                 });
@@ -61,29 +64,40 @@ public class UserEventServiceImpl implements UserEventService {
 
     @Override
     @CacheEvict(value = "users", key = "#userId")
-    public Mono<Void> updatePassword(String userId, String newPassword) {
+    public Mono<Void> updatePassword(final String userId,
+                                     final String newPassword) {
         AbstractEvent event = new ResetPasswordEvent();
         event.setAggregateId(userId);
         event.setPayload(passwordEncoder.encode(newPassword));
         event.setType(EventType.RESET_PASSWORD);
         eventRepository.save(event);
+        KafkaMessage message = new KafkaMessage();
+        message.setTopic("events");
+        message.setKey(userId);
+        message.setPartition(0);
         return messageSender.sendMessage(
-                        "events",
-                        0,
-                        userId,
+                        message,
                         event)
                 .then();
     }
 
     @Override
     @CacheEvict(value = "users", key = "#userId")
-    public Mono<Void> updatePassword(String userId, Password password) {
+    public Mono<Void> updatePassword(final String userId,
+                                     final Password password) {
         Mono<User> user = userQueryService.getById(userId);
         return user.flatMap(u -> {
-                    if (!passwordEncoder.matches(password.getOldPassword(), u.getPassword())) {
-                        return Mono.error(new PasswordMismatchException("old password is incorrect"));
+                    if (!passwordEncoder.matches(password.getOldPassword(),
+                            u.getPassword())) {
+                        return Mono.error(
+                                new PasswordMismatchException(
+                                        "old password is incorrect"
+                                )
+                        );
                     }
-                    password.setNewPassword(passwordEncoder.encode(password.getNewPassword()));
+                    password.setNewPassword(
+                            passwordEncoder.encode(password.getNewPassword())
+                    );
                     return user;
                 })
                 .flatMap(u -> {
@@ -92,21 +106,25 @@ public class UserEventServiceImpl implements UserEventService {
                     event.setPayload(password);
                     event.setType(EventType.UPDATE_PASSWORD);
                     eventRepository.save(event);
+                    KafkaMessage message = new KafkaMessage();
+                    message.setTopic("events");
+                    message.setKey(userId);
+                    message.setPartition(0);
                     return messageSender.sendMessage(
-                                    "events",
-                                    0,
-                                    userId,
+                                    message,
                                     event)
                             .then();
                 });
     }
 
     @Override
-    public Mono<Void> create(User user) {
+    public Mono<Void> create(final User user) {
         return checkIfEmailIsAvailable(user)
                 .onErrorResume(Mono::error)
                 .map(value -> {
-                    user.setPassword(passwordEncoder.encode(user.getPassword()));
+                    user.setPassword(
+                            passwordEncoder.encode(user.getPassword())
+                    );
                     user.setActivated(false);
                     return user;
                 })
@@ -115,22 +133,29 @@ public class UserEventServiceImpl implements UserEventService {
                     event.setType(EventType.USER_CREATE);
                     event.setPayload(u);
                     eventRepository.save(event);
+                    KafkaMessage message = new KafkaMessage();
+                    message.setTopic("events");
+                    message.setKey(String.valueOf(user.hashCode()));
+                    message.setPartition(0);
                     return messageSender.sendMessage(
-                                    "events",
-                                    0,
-                                    String.valueOf(user.hashCode()),
+                                    message,
                                     event)
                             .then();
                 });
     }
 
-    private Mono<Boolean> checkIfEmailIsAvailable(User user) {
-        Mono<User> userWithSameEmail = userQueryService.getByEmail(user.getEmail());
-        Mono<Boolean> error = Mono.error(new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists"));
+    private Mono<Boolean> checkIfEmailIsAvailable(final User user) {
+        Mono<User> userWithSameEmail = userQueryService.getByEmail(
+                user.getEmail()
+        );
+        Mono<Boolean> error = Mono.error(
+                new UserAlreadyExistsException("User with email "
+                        + user.getEmail() + " already exists"));
         return userWithSameEmail
                 .onErrorResume(u -> Mono.just(user))
                 .flatMap(u -> {
-                    if (!u.equals(user) && !Objects.equals(u.getId(), user.getId())) {
+                    if (!u.equals(user)
+                            && !Objects.equals(u.getId(), user.getId())) {
                         return error;
                     }
                     return Mono.just(true);
@@ -138,37 +163,41 @@ public class UserEventServiceImpl implements UserEventService {
     }
 
     @Override
-    public Mono<Void> activate(JwtToken token) {
+    public Mono<Void> activate(final JwtToken token) {
         if (!jwtService.validateToken(token.getToken())) {
             throw new InvalidTokenException("token is expired");
         }
-        if (!jwtService.isTokenType(token.getToken(), JwtTokenType.ACTIVATION)) {
+        if (!jwtService.isTokenType(token.getToken(),
+                JwtTokenType.ACTIVATION)) {
             throw new InvalidTokenException("invalid reset token");
         }
         AbstractEvent event = new UserActivateEvent();
         event.setAggregateId(jwtService.retrieveUserId(token.getToken()));
         event.setType(EventType.USER_ACTIVATE);
         eventRepository.save(event);
+        KafkaMessage message = new KafkaMessage();
+        message.setTopic("events");
+        message.setKey(String.valueOf(token.hashCode()));
+        message.setPartition(0);
         return messageSender.sendMessage(
-                        "events",
-                        0,
-                        String.valueOf(token.hashCode()),
+                        message,
                         event)
                 .then();
     }
 
     @Override
     @CacheEvict(value = "users", key = "#id")
-    public Mono<Void> delete(String id) {
-        //TODO change all cacheevicts to ops
+    public Mono<Void> delete(final String id) {
         AbstractEvent event = new UserDeleteEvent();
         event.setType(EventType.USER_DELETE);
         event.setAggregateId(id);
         eventRepository.save(event);
+        KafkaMessage message = new KafkaMessage();
+        message.setTopic("events");
+        message.setKey(id);
+        message.setPartition(0);
         return messageSender.sendMessage(
-                        "events",
-                        0,
-                        id,
+                        message,
                         event)
                 .then();
     }

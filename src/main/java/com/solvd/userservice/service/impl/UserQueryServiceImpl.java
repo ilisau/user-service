@@ -17,8 +17,10 @@ public class UserQueryServiceImpl implements UserQueryService {
     private final ReactiveRedisOperations<String, User> userOps;
 
     @Override
-    public Mono<User> getById(String id) {
-        Mono<User> error = Mono.error(new UserNotFoundException("User with id " + id + " not found"));
+    public Mono<User> getById(final String id) {
+        Mono<User> error = Mono.error(
+                new UserNotFoundException("User with id " + id + " not found")
+        );
         return userOps.opsForValue()
                 .get(id)
                 .switchIfEmpty(userRepository.findById(id)
@@ -32,8 +34,11 @@ public class UserQueryServiceImpl implements UserQueryService {
     }
 
     @Override
-    public Mono<User> getByEmail(String email) {
-        Mono<User> error = Mono.error(new UserNotFoundException("User with email " + email + " not found"));
+    public Mono<User> getByEmail(final String email) {
+        Mono<User> error = Mono.error(
+                new UserNotFoundException("User with email " + email
+                        + " not found")
+        );
         return userRepository.findByEmail(email)
                 .switchIfEmpty(error);
     }

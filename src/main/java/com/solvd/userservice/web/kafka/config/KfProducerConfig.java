@@ -22,10 +22,20 @@ public class KfProducerConfig {
 
     private final XML settings;
 
-    public KfProducerConfig(@Qualifier("producerXml") XML settings) {
+    /**
+     * Constructor.
+     *
+     * @param settings xml settings
+     */
+    public KfProducerConfig(@Qualifier("producerXml") final XML settings) {
         this.settings = settings;
     }
 
+    /**
+     * Create topic mail.
+     *
+     * @return the new topic
+     */
     @Bean
     public NewTopic topicMail() {
         return TopicBuilder.name("mail")
@@ -34,6 +44,11 @@ public class KfProducerConfig {
                 .build();
     }
 
+    /**
+     * Create topic events.
+     *
+     * @return the new topic
+     */
     @Bean
     public NewTopic topicEvents() {
         return TopicBuilder.name("events")
@@ -42,6 +57,11 @@ public class KfProducerConfig {
                 .build();
     }
 
+    /**
+     * Create sender options.
+     *
+     * @return the sender options
+     */
     @Bean
     public SenderOptions<String, Object> senderOptions() {
         Map<String, Object> props = new HashMap<>(3);
@@ -59,8 +79,16 @@ public class KfProducerConfig {
         return SenderOptions.create(props);
     }
 
+    /**
+     * Create a Kafka sender.
+     *
+     * @param senderOptions the sender options
+     * @return the Kafka sender
+     */
     @Bean
-    public KafkaSender<String, Object> sender(SenderOptions<String, Object> senderOptions) {
+    public KafkaSender<String, Object> sender(
+            final SenderOptions<String, Object> senderOptions
+    ) {
         return KafkaSender.create(senderOptions);
     }
 

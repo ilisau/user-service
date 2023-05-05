@@ -25,11 +25,14 @@ public class UserResetPasswordEventHandler implements EventHandler {
     private final PasswordParser passwordParser;
 
     @Override
-    public void handle(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+    public void handle(final ConsumerRecord<String, Object> record,
+                       final Acknowledgment acknowledgment) {
         String json = (String) record.value();
-        ResetPasswordEvent event = gson.fromJson(json, ResetPasswordEvent.class);
+        ResetPasswordEvent event = gson.fromJson(json,
+                ResetPasswordEvent.class);
         if (event.getType() == EventType.RESET_PASSWORD) {
-            LinkedTreeMap<String, String> payload = (LinkedTreeMap) event.getPayload();
+            LinkedTreeMap<String, String> payload =
+                    (LinkedTreeMap) event.getPayload();
             Password password = passwordParser.parse(payload);
             event.setPayload(password);
             Mono<User> user = userRepository.findById(event.getAggregateId());

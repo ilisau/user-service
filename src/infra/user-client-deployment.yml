@@ -54,3 +54,14 @@ spec:
                   key: KAFKA_HOST
             - name: REDIS_HOST
               value: redis
+          volumeMounts:
+            - name: my-service-account-token
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
+      volumes:
+        - name: my-service-account-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: token
+                  expirationSeconds: 3600

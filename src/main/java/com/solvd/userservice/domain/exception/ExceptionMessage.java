@@ -14,7 +14,12 @@ public class ExceptionMessage {
     private String message;
     private Map<String, String> details;
 
-    public ExceptionMessage(String message) {
+    /**
+     * Constructor of ExceptionMessage.
+     *
+     * @param message message
+     */
+    public ExceptionMessage(final String message) {
         this.message = message;
     }
 

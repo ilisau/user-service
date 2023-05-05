@@ -10,7 +10,12 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @ConfigurationPropertiesScan
 public class UserServiceApplication {
 
-    public static void main(String[] args) {
+    /**
+     * The main method.
+     *
+     * @param args the args
+     */
+    public static void main(final String[] args) {
         SpringApplication.run(UserServiceApplication.class, args);
     }
 

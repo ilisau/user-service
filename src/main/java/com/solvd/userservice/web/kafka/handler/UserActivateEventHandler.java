@@ -21,7 +21,8 @@ public class UserActivateEventHandler implements EventHandler {
     private final Gson gson;
 
     @Override
-    public void handle(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+    public void handle(final ConsumerRecord<String, Object> record,
+                       final Acknowledgment acknowledgment) {
         String json = (String) record.value();
         UserActivateEvent event = gson.fromJson(json, UserActivateEvent.class);
         if (event.getType() == EventType.USER_ACTIVATE) {

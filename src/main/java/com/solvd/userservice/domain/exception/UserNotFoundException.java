@@ -2,7 +2,12 @@ package com.solvd.userservice.domain.exception;
 
 public class UserNotFoundException extends RuntimeException {
 
-    public UserNotFoundException(String message) {
+    /**
+     * Constructor of UserNotFoundException.
+     *
+     * @param message message
+     */
+    public UserNotFoundException(final String message) {
         super(message);
     }
 

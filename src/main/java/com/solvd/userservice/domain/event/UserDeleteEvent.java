@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 public class UserDeleteEvent extends AbstractEvent {
 
     @Override
-    public Mono<Void> copyTo(Mono<UserAggregate> aggregate) {
+    public Mono<Void> copyTo(final Mono<UserAggregate> aggregate) {
         return Mono.empty();
     }
 
