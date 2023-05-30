@@ -11,8 +11,9 @@ import lombok.SneakyThrows;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
-import org.springframework.data.redis.core.ReactiveRedisOperations;
+import org.springframework.data.redis.core.ReactiveHashOperations;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -73,22 +74,25 @@ public class WebConfig {
     /**
      * Create redis operations.
      *
-     * @param factory the factory
-     * @return the reactive redis operations
+     * @param redisConnectionFactory connection factory
+     * @return the reactive redis hash operations
      */
     @Bean
-    public ReactiveRedisOperations<String, User> redisOperations(
-            final ReactiveRedisConnectionFactory factory
+    public ReactiveHashOperations<String, String, User> userHashOps(
+            final ReactiveRedisConnectionFactory redisConnectionFactory
     ) {
-        Jackson2JsonRedisSerializer<User> serializer =
-                new Jackson2JsonRedisSerializer<>(User.class);
-        RedisSerializationContext
-                .RedisSerializationContextBuilder<String, User> builder =
-                RedisSerializationContext.newSerializationContext(
-                        new StringRedisSerializer());
-        RedisSerializationContext<String, User> context =
-                builder.value(serializer).build();
-        return new ReactiveRedisTemplate<>(factory, context);
+        ReactiveRedisTemplate<String, User> template
+                = new ReactiveRedisTemplate<>(
+                redisConnectionFactory,
+                RedisSerializationContext.<String, User>newSerializationContext(
+                                new StringRedisSerializer())
+                        .hashKey(new GenericToStringSerializer<>(String.class))
+                        .hashValue(
+                                new Jackson2JsonRedisSerializer<>(User.class)
+                        )
+                        .build()
+        );
+        return template.opsForHash();
     }
 
 }
