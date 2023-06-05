@@ -37,6 +37,9 @@ spring:
         bootstrap-servers: ${KAFKA_HOST}
         key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
         value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  graphql:
+    graphiql:
+      enabled: true
 
 security:
   jwt:

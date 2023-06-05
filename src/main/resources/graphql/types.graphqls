@@ -1,0 +1,31 @@
+input InputToken {
+    token: String
+}
+
+input InputPassword {
+    oldPassword: String
+    newPassword: String
+}
+type User {
+    id: ID
+    name: String
+    surname: String
+    email: String
+    password: String
+    role: Role
+    isActivated: Boolean
+}
+
+input InputUser {
+    id: ID
+    name: String
+    surname: String
+    email: String
+    password: String
+    role: Role
+}
+
+enum Role {
+    CLIENT,
+    EMPLOYEE
+}
