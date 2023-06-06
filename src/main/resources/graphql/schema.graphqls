@@ -1,0 +1,13 @@
+type Query {
+    userById(id: ID): User
+    userByEmail(email: String): User
+}
+
+type Mutation {
+    deleteUser(id: ID): Boolean
+    activateUser(token: InputToken): Boolean
+    setPassword(id: ID newPassword: String): Boolean
+    changePassword(id: ID password: InputPassword): Boolean
+    updateUser(user: InputUser): Boolean
+    createUser(user: InputUser): Boolean
+}
